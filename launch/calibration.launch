@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- FEEDBACK-->
+	<!-- Feedback arguments -->
+		<arg name="modality" 	     default='calibration'/>
+		<arg name="thresholds"       default='[1.0, 1.0]'/>
+		<arg name="classes"          default='[730, 731]'/>
+		<arg name="trials"           default='[10, 10]'/>
+		<!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; 0.0 0.65"/-->
+		<arg name="circlePositions"  default="-1.65 -0.8; 1.65 -0.8"/>
+		<!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; -1.3 0.85; 1.3 0.85"/-->
+		<arg name="audio_path"       default="/home/paolo/Scaricati/b.wav"/>
+
+	<!-- Eye calibration online arguments -->
+		<arg name="eye_calibration"    default='True'/> <!-- if false the node will not start -->
+		<arg name="th_frame"        default='3'/>
+		<arg name="calibration_positions"  default="0.0 0.0; 
+							     -1.65 -0.8;
+													 1.65 -0.8;
+													 0.0 -0.8;
+													-1.65 0.0;
+													 1.65 0.0;
+													-1.65 0.9;
+													 1.65 0.9;
+													 0.0  0.9"/> <!-- always 0.0 0.0 with 735 as first elem -->
+		<arg name="calibration_classes"          default='[735,730,731,732,733,734,736,737,738]'/>
+		<arg name="max_trials_per_class" default='[15, 15]'/>
+
+	<!-- node -->
+	<node name="trainingCVSA_node" pkg="feedback_cvsa" type="trainingCVSA_node"  output="screen">
+		<rosparam param="modality" subst_value="True">$(arg modality)</rosparam>
+		<rosparam param="thresholds" subst_value="True">$(arg thresholds)</rosparam>
+		<rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
+		<rosparam param="trials" subst_value="True">$(arg trials)</rosparam>
+		<rosparam param="circlePositions" subst_value="True">$(arg circlePositions)</rosparam>
+		<rosparam param="eye_calibration" subst_value="True">$(arg eye_calibration)</rosparam>
+		<rosparam param="calibration_positions" subst_value="True">$(arg calibration_positions)</rosparam>
+		<rosparam param="calibration_classes" subst_value="True">$(arg calibration_classes)</rosparam> 
+		<rosparam param="max_trials_per_class" subst_value="True">$(arg max_trials_per_class)</rosparam> 
+		<rosparam param="audio_path" subst_value="True">$(arg audio_path)</rosparam>
+	</node>
+			
+	<!-- ACQUISITION-->
+	<!-- Acquisition arguments -->
+		<arg name="plugin"     default='rosneuro::EGDDevice'/>
+		<arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/>
+		<!--arg name="devarg" default='/home/paolo/prova39ch.gdf'/-->
+		<arg name="framerate"  default='16'/>
+		<arg name="samplerate" default='512'/>
+
+	<!-- node -->
+	<node name="acquisition" pkg="rosneuro_acquisition" type="acquisition" output="screen" >
+		<param name="~plugin" 	  value="$(arg plugin)"/>
+		<param name="~devarg" 	  value="$(arg devarg)"/>
+		<param name="~samplerate" value="$(arg samplerate)"/>
+		<param name="~framerate"  value="$(arg framerate)"/>
+	</node>
+
+	<!-- RECORDER-->
+	<!-- Recorder arguments -->
+		<arg name="autostart" default='true'/>
+		<arg name="filepath"  default='/home/paolo/cvsa_ws/record' />
+	<!-- Protocol arguments -->
+		<arg name="subject"   default="c7_new"/>
+		<arg name="task"      default="cvsa_lbrb"/>
+		<arg name="extra"     default=""/>
+
+	<!-- Protocol parameters -->
+		<rosparam param="/protocol/subject"	 subst_value="True">$(arg subject)</rosparam>
+		<rosparam param="/protocol/modality" subst_value="True">$(arg modality)</rosparam>
+		<rosparam param="/protocol/task"	 subst_value="True">$(arg task)</rosparam>
+		<rosparam param="/protocol/extra"	 subst_value="True">$(arg extra)</rosparam>
+
+	<!-- node -->
+	<node name="recorder" pkg="rosneuro_recorder" type="recorder" >
+		<param name="~autostart" value="$(arg autostart)"/>
+		<param name="~filepath" value="$(arg filepath)"/>
+	</node>
+
+	<!-- EYE_DECODER -->
+    <!-- Eye_decoder arguments -->
+        <arg name="cam_source"                  default='4'/>
+        <arg name="blink_threshold"             default='0.52'/>
+        <arg name="rate"                        default='256'/>
+        <arg name="show_frame"                  default='True'/>
+
+    <!-- node -->
+    <node name="eye_decoder" pkg="eye_decoder" type="eye_decoder_node.py" output="screen" >
+        <param name="cam_source"          type="int"               value="$(arg cam_source)"/>
+        <param name="rate"                type="int"               value="$(arg rate)"/>
+        <param name="show_frame"          type="bool"              value="$(arg show_frame)"/>
+        <param name="blink_threshold"     type="double"            value="$(arg blink_threshold)"/>
+    </node>
+
+	<!-- Eye calibration online node -->
+	<node pkg="eye_motion_online" type="online_eye_node" name="online_eye_node" if="$(arg eye_calibration)" output="screen">
+		<rosparam param="classes" subst_value="True">$(arg calibration_classes)</rosparam>
+		<rosparam param="th_frame" subst_value="True">$(arg th_frame)</rosparam>
+    </node>
+	
+	<!-- ROSBAG -->
+	<!-- rosbag recording node -->
+    <node pkg="rosbag" type="record" name="record_bag" output="screen"
+          args="/cvsa/eye /events/bus /cvsa/trials_keep">
+    </node>
+
+	
+
+</launch>
