@@ -4,8 +4,8 @@
     <!-- ACQUISITION -->
 	<!-- arguments -->
 		<arg name="plugin"     default='rosneuro::EGDDevice'/>
-		<arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/>
-		<!--arg name="devarg" default='/home/paolo/prova39ch.gdf'/-->
+		<!--arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/-->
+		<arg name="devarg" default='/home/paolo/prova39ch.gdf'/>
 		<arg name="framerate"  default='16'/>
 		<arg name="samplerate" default='512'/>
 
@@ -23,7 +23,7 @@
 		<arg name="autostart" default='true'/>
 		<arg name="filepath"  default='/home/paolo/cvsa_ws/record' />
     <!-- arguments protocol -->
-		<arg name="subject"   default="c7_new"/>
+		<arg name="subject"   default="c7_vis"/>
 		<arg name="task"      default="cvsa_lbrb"/>
 		<arg name="extra"     default=""/>
         <arg name="modality" 	     default='evaluation'/>
@@ -35,10 +35,10 @@
 		<rosparam param="/protocol/extra"	 subst_value="True">$(arg extra)</rosparam>
 
     <!-- node -->
-	<node name="recorder" pkg="rosneuro_recorder" type="recorder" >
+	<!--node name="recorder" pkg="rosneuro_recorder" type="recorder" >
 		<param name="~autostart" value="$(arg autostart)"/>
 		<param name="~filepath" value="$(arg filepath)/$(arg subject)/gdf"/>
-	</node>
+	</node-->
 
 
     <!-- EYE_DECODER -->
@@ -67,10 +67,7 @@
     <!-- PROCESSING -->
     <!-- arguments -->
 	<rosparam command="load" file="$(find processing_cvsa)/cfg/ringbuffer.yaml"/>
-	<rosparam command="load" file="$(find processing_cvsa)/cfg/qdaCfg.yaml"/>
-	<arg name="plugin_decoder" default='rosneuro::decoder::Qda'/>
-	<arg name="cfg_name" default='QdaCfg'/>
-    <arg name="nchannels" default='32'/>
+    <arg name="nchannels" default='39'/>
     <arg name="nsamples" default='32'/>
     <arg name="avg" default='1'/>
     <arg name="filter_order" default='4'/>
@@ -78,15 +75,12 @@
 
     <!-- node -->
 	<node name="processing_cvsa_node" pkg="processing_cvsa" type="processing_cvsa_node" output="screen"> 
-		<param name="plugin" 	  value="$(arg plugin_decoder)"/>
-        <param name="cfg_name" 	  value="$(arg cfg_name)"/>
         <param name="nchannels"   value="$(arg nchannels)"/>
         <param name="nsamples" 	  value="$(arg nsamples)"/>
         <param name="samplerate"  value='$(arg samplerate)'/>
         <param name="avg" 		  value="$(arg avg)"/>
         <param name="filter_order" value="$(arg filter_order)"/>
         <param name="filters_band" 		  value="$(arg filters_band)"/>
-        <!--rosparam param="band"> [8.0, 14.0]</rosparam-->
 	</node>
 
 
@@ -108,6 +102,17 @@
 	</node>
 
 
+	<!-- QDA DECODER -->
+	<!-- arguments -->
+	<arg name="path_qda_decoder" default="$(find qda_cvsa)" /> 
+
+	<!-- node -->
+	<node name="qda" pkg="qda_cvsa" type="qda.py" output="screen" >
+		<param name="~path_qda_decoder" 	  value="$(arg path_qda_decoder)"/>
+        <param name="~subject" value="$(arg subject)"/>
+	</node>
+
+
     <!-- FEEDBACK -->
 	<!-- visual and audio feedback arguments -->
 		<arg name="thresholds"       default='[1.0, 1.0]'/>
@@ -116,10 +121,10 @@
 		<!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; 0.0 0.65"/-->
 		<arg name="circlePositions"  default="-1.65 -0.8; 1.65 -0.8"/>
 		<!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; -1.3 0.85; 1.3 0.85"/-->
-		<arg name="audio_path"       default="/home/paolo/Scaricati/b.wav"/>
+		<arg name="audio_path"       default="$(find feedback_cvsa)/cfg/audio.wav"/>
 	
 	<!-- positive feedback arguments -->
-		<arg name="positive_feedback" default='True'/>
+		<arg name="positive_feedback" default='False'/>
 
     <!-- eye calibration arguments -->
 		<arg name="th_frame"        default='3'/>
@@ -152,8 +157,8 @@
 
 
     <!-- ROSBAG -->
-    <node pkg="rosbag" type="record" name="record_bag" output="screen"
+    <!--node pkg="rosbag" type="record" name="record_bag" output="screen"
           args="/cvsa/eye /events/bus /cvsa/trials_keep">
-    </node>
+    </node-->
 
 </launch>

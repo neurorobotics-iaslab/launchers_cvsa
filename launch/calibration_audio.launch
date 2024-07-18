@@ -10,7 +10,7 @@
 		<!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; 0.0 0.65"/-->
 		<arg name="circlePositions"  default="-1.65 -0.8; 1.65 -0.8"/>
 		<!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; -1.3 0.85; 1.3 0.85"/-->
-		<arg name="audio_path"       default="/home/paolo/Scaricati/b.wav"/>
+		<arg name="audio_path"       default="$(find feedback_cvsa)/cfg/audio.wav"/>
 
 	<!-- Eye calibration online arguments -->
 		<arg name="eye_calibration"    default='True'/> <!-- if false the node will not start -->
