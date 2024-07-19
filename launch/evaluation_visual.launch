@@ -4,8 +4,8 @@
     <!-- ACQUISITION -->
 	<!-- arguments -->
 		<arg name="plugin"     default='rosneuro::EGDDevice'/>
-		<!--arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/-->
-		<arg name="devarg" default='/home/paolo/prova39ch.gdf'/>
+		<arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/>
+		<!--arg name="devarg" default='/home/paolo/prova39ch.gdf'/-->
 		<arg name="framerate"  default='16'/>
 		<arg name="samplerate" default='512'/>
 
@@ -23,7 +23,7 @@
 		<arg name="autostart" default='true'/>
 		<arg name="filepath"  default='/home/paolo/cvsa_ws/record' />
     <!-- arguments protocol -->
-		<arg name="subject"   default="c7_vis"/>
+		<arg name="subject"   default="c72vis"/>
 		<arg name="task"      default="cvsa_lbrb"/>
 		<arg name="extra"     default=""/>
         <arg name="modality" 	     default='evaluation'/>
@@ -35,10 +35,10 @@
 		<rosparam param="/protocol/extra"	 subst_value="True">$(arg extra)</rosparam>
 
     <!-- node -->
-	<!--node name="recorder" pkg="rosneuro_recorder" type="recorder" >
+	<node name="recorder" pkg="rosneuro_recorder" type="recorder" >
 		<param name="~autostart" value="$(arg autostart)"/>
 		<param name="~filepath" value="$(arg filepath)/$(arg subject)/gdf"/>
-	</node-->
+	</node>
 
 
     <!-- EYE_DECODER -->
@@ -70,7 +70,7 @@
 	<rosparam command="load" file="$(find processing_cvsa)/cfg/qdaCfg.yaml"/>
 	<arg name="plugin_decoder" default='rosneuro::decoder::Qda'/>
 	<arg name="cfg_name" default='QdaCfg'/>
-    <arg name="nchannels" default='38'/>
+    <arg name="nchannels" default='39'/>
     <arg name="nsamples" default='32'/>
     <arg name="avg" default='1'/>
     <arg name="filter_order" default='4'/>
@@ -93,7 +93,7 @@
     <!-- arguments -->
     <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
 	<arg name="n_classes" default="2" /> 
-	<arg name="buffer_size" default="64" /> 
+	<arg name="buffer_size" default="48" /> 
 	<arg name="increment" default="0" /> 
 	<arg name="init_val" default="[0.,0.]" /> 
 
@@ -148,12 +148,6 @@
 	</node>
 
 
-    <!-- ROSBAG -->
-    <!--node pkg="rosbag" type="record" name="record_bag" output="screen"
-          args="/cvsa/eye /events/bus /cvsa/trials_keep">
-    </node-->
-
-
 	<!-- QDA DECODER -->
 	<!-- arguments -->
 	<arg name="path_qda_decoder" default="$(find qda_cvsa)" /> 
@@ -163,5 +157,15 @@
 		<param name="~path_qda_decoder" 	  value="$(arg path_qda_decoder)"/>
         <param name="~subject" value="$(arg subject)"/>
 	</node>
+
+
+	<!-- ROSBAG -->
+    <!--node pkg="rosbag" type="record" name="record_bag" output="screen"
+          args="/cvsa/eye /events/bus /cvsa/trials_keep">
+    </node-->
+	<node pkg="bag_cvsa" type="save_bag.py" name="save_bag" output="screen">
+		<rosparam param="filepath" subst_value="True">$(arg filepath)</rosparam>
+		<rosparam param="subject" subst_value="True">$(arg subject)</rosparam>
+    </node>
 
 </launch>
