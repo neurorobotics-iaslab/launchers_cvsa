@@ -87,16 +87,14 @@
     <!-- INTEGRATOR -->
     <!-- arguments -->
     <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
-	<arg name="n_classes" default="2" /> 
-	<arg name="buffer_size" default="64" /> 
+	<arg name="buffers_size" default="[48, 64]" /> 
 	<arg name="increment" default="0" /> 
 	<arg name="init_val" default="[0.,0.]" /> 
 
     <!-- node -->
 	<node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen" >
 		<param name="plugin" 	  value="$(arg plugin_integrator)"/>
-		<param name="buffer_size" value="$(arg buffer_size)"/>
-		<param name="n_classes" value="$(arg n_classes)"/>
+		<rosparam param="buffers_size" subst_value="True">$(arg buffers_size)</rosparam>
 		<param name="increment" value="$(arg increment)"/>
 		<rosparam param="init_val" subst_value="True">$(arg init_val)</rosparam>
 	</node>
