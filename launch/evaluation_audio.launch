@@ -87,18 +87,18 @@
     <!-- INTEGRATOR -->
     <!-- arguments -->
     <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
-	<arg name="buffers_size" default="[48, 64]" /> 
+	<arg name="buffers_size" default="96" /> 
 	<arg name="increment" default="0" /> 
-	<arg name="init_val" default="[0.,0.]" /> 
+	<arg name="classes"          default='[730, 731]'/>
+	<arg name="init_percentual" default="[0.5,0.5]" /> 
 
     <!-- node -->
 	<node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen" >
 		<param name="plugin" 	  value="$(arg plugin_integrator)"/>
 		<rosparam param="buffers_size" subst_value="True">$(arg buffers_size)</rosparam>
-		<param name="increment" value="$(arg increment)"/>
-		<rosparam param="init_val" subst_value="True">$(arg init_val)</rosparam>
+		<rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
+		<rosparam param="init_percentual" subst_value="True">$(arg init_percentual)</rosparam>
 	</node>
-
 
 	<!-- QDA DECODER -->
 	<!-- arguments -->
@@ -155,9 +155,6 @@
 
 
     <!-- ROSBAG -->
-    <!--node pkg="rosbag" type="record" name="record_bag" output="screen"
-          args="/cvsa/eye /events/bus /cvsa/trials_keep">
-    </node-->
 	<node pkg="bag_cvsa" type="save_bag.py" name="save_bag" output="screen">
 		<rosparam param="filepath" subst_value="True">$(arg filepath)</rosparam>
 		<rosparam param="subject" subst_value="True">$(arg subject)</rosparam>
