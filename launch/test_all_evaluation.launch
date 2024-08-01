@@ -98,7 +98,7 @@
     <!-- INTEGRATOR -->
     <!-- arguments -->
     <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
-	<arg name="buffers_size" default="96" /> 
+	<arg name="buffers_size" default="64" /> 
 	<arg name="classes"          default='[730, 731]'/>
 	<arg name="init_percentual" default="[0.5,0.5]" /> 
 

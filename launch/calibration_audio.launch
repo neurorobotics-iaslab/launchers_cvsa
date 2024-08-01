@@ -26,6 +26,7 @@
 													 0.0  0.9"/> <!-- always 0.0 0.0 with 735 as first elem -->
 		<arg name="calibration_classes"          default='[735,730,731,732,733,734,736,737,738]'/>
 		<arg name="max_trials_per_class" default='[15, 15]'/>
+		<arg name="init_percentual" default="[0.5,0.5]" /> 
 
 	<!-- node -->
 	<node name="trainingCVSA_node" pkg="feedback_cvsa" type="trainingCVSA_node"  output="screen">
@@ -39,6 +40,7 @@
 		<rosparam param="calibration_classes" subst_value="True">$(arg calibration_classes)</rosparam> 
 		<rosparam param="max_trials_per_class" subst_value="True">$(arg max_trials_per_class)</rosparam> 
 		<rosparam param="audio_path" subst_value="True">$(arg audio_path)</rosparam>
+		<rosparam param="init_percentual" subst_value="True">$(arg init_percentual)</rosparam>
 	</node>
 			
 	<!-- ACQUISITION-->
