@@ -108,8 +108,9 @@
 
 
     <!-- ROSBAG -->
-    <!--node pkg="rosbag" type="record" name="record_bag" output="screen"
-          args="/cvsa/eye /events/bus /cvsa/trials_keep">
+    <!--node pkg="bag_cvsa" type="save_bag.py" name="save_bag" output="screen">
+		<rosparam param="filepath" subst_value="True">$(arg filepath)</rosparam>
+		<rosparam param="subject" subst_value="True">$(arg subject)</rosparam>
     </node-->
 
 </launch>
