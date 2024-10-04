@@ -5,7 +5,7 @@
 	<!-- arguments -->
 		<arg name="plugin"     default='rosneuro::EGDDevice'/>
 		<!--arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/-->
-		<arg name="devarg" default='/home/paolo/prova39ch.gdf'/>
+		<arg name="devarg" default='/home/paolo/c7_test.gdf'/>
 		<arg name="framerate"  default='16'/>
 		<arg name="samplerate" default='512'/>
 
@@ -23,7 +23,7 @@
 		<arg name="autostart" default='true'/>
 		<arg name="filepath"  default='/home/paolo/cvsa_ws/record' />
     <!-- arguments protocol -->
-		<arg name="subject"   default="c7_aud"/>
+		<arg name="subject"   default="test"/>
 		<arg name="task"      default="cvsa_lbrb"/>
 		<arg name="extra"     default=""/>
         <arg name="modality" 	     default='evaluation'/>
@@ -67,9 +67,9 @@
     <!-- PROCESSING -->
     <!-- arguments -->
 	<rosparam command="load" file="$(find processing_cvsa)/cfg/ringbuffer.yaml"/>
-    <arg name="nchannels" default='38'/> <!-- 38 for gdf, 39 for online -->
+    <arg name="nchannels" default='39'/> <!-- 38 for gdf offline, 39 for online -->
     <arg name="nsamples" default='32'/>
-    <arg name="avg" default='1'/>
+    <arg name="modality_usage" default="online" /> <!-- offline or online -->
     <arg name="filter_order" default='4'/>
     <arg name='filters_band' default='8.0 10.0; 10.0 12.0; 12.0 14.0; 14.0 16.0; 16.0 18.0;'/>
 
@@ -78,9 +78,9 @@
         <param name="nchannels"   value="$(arg nchannels)"/>
         <param name="nsamples" 	  value="$(arg nsamples)"/>
         <param name="samplerate"  value='$(arg samplerate)'/>
-        <param name="avg" 		  value="$(arg avg)"/>
         <param name="filter_order" value="$(arg filter_order)"/>
         <param name="filters_band" 		  value="$(arg filters_band)"/>
+		<param name="~modality" 	  value="$(arg modality_usage)"/>
 	</node>
 
 
@@ -101,7 +101,7 @@
 
 	<!-- QDA DECODER -->
 	<!-- arguments -->
-	<arg name="path_qda_decoder" default="$(find qda_cvsa)" /> 
+	<arg name="path_qda_decoder" default="/home/paolo/cvsa_ws/record/c7/qda_c7.yaml" />
 
 	<!-- node -->
 	<node name="qda" pkg="qda_cvsa" type="qda.py" output="screen" >
