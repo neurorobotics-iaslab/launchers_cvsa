@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>launchers</name>
+  <name>launchers_cvsa</name>
   <version>0.0.0</version>
   <description>The launchers package</description>
 
