@@ -6,7 +6,7 @@
 		<arg name="modality" 	     default='calibration'/>
 		<arg name="thresholds"       default='[1.0, 1.0]'/>
 		<arg name="classes"          default='[730, 731]'/>
-		<arg name="trials"           default='[2, 2]'/>
+		<arg name="trials"           default='[5, 5]'/>
 		<!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; 0.0 0.65"/-->
 		<arg name="circlePositions"  default="-1.65 -0.8; 1.65 -0.8"/>
 		<!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; -1.3 0.85; 1.3 0.85"/-->
