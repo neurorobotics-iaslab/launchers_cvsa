@@ -1,6 +1,43 @@
 <?xml version="1.0"?>
 <launch>
 
+    <!-- EYE_DECODER, CALIBRATION AND CAMERA -->
+    <arg name="eye_detection" default='true'/>
+    <arg name="realsense_camera" default='true'/>
+    <arg name="eye_motion_online" default='false'/> <!-- Check the eye motion online -->
+    <group if="$(arg eye_detection)">
+        <!-- Eye_decoder arguments -->
+            <arg name="cam_source"                  default='0'/> <!-- 4 -->
+            <arg name="blink_threshold"             default='0.52'/>
+            <arg name="rate"                        default='256'/>
+            <arg name="show_frame"                  default='True'/>
+
+        <!-- Realsense camera node -->
+        <group if="$(arg realsense_camera)">
+            <include file="$(find realsense2_camera)/launch/rs_camera.launch" >
+                <arg name="initial_reset"    value="true"/>
+                <arg name="enable_depth"     value="false"/>
+            </include>
+        </group>
+
+        <!-- Eye decoder node -->
+        <node name="eye_decoder" pkg="eye_decoder" type="eye_decoder_node.py" output="screen" >
+            <param name="realsense_camera"    type="bool"              value="$(arg realsense_camera)"/>
+            <param name="cam_source"          type="int"               value="$(arg cam_source)" if="$(eval not realsense_camera)" />
+            <param name="rate"                type="int"               value="$(arg rate)"/>
+            <param name="show_frame"          type="bool"              value="$(arg show_frame)"/>
+            <param name="blink_threshold"     type="double"            value="$(arg blink_threshold)"/>
+        </node>
+
+        <!-- Eye calibration online node -->
+        <group if="$(arg eye_motion_online)">
+            <node pkg="eye_motion_online" type="online_eye_node" name="online_eye_node" output="screen">
+                <rosparam param="classes"  subst_value="True">$(arg calibration_classes)</rosparam>
+                <rosparam param="th_frame" subst_value="True">$(arg th_frame)</rosparam>
+            </node>
+        </group>
+    </group>
+
     <!-- FEEDBACK-->
     <!-- Feedback arguments -->
         <arg name="modality"         default='calibration'/>
@@ -29,9 +66,6 @@
                                                      0.0  0.9"/> <!-- always 0.0 0.0 with 735 as first elem -->
         <arg name="calibration_classes"     default='[735,730,731,732,733,734,736,737,738]'/>
         <arg name="max_trials_per_class"    default='[10, 10]'/>
-    
-    <!-- Check the eye motion online -->
-        <arg name="eye_motion_online" default='false'/>
 
     <!-- node -->
     <node name="trainingCVSA_node" pkg="feedback_cvsa" type="trainingCVSA_node"  output="screen">
@@ -48,7 +82,8 @@
         <rosparam param="audio_cue"             subst_value="True">$(arg audio_cue) </rosparam>
         <rosparam param="robot_control"         subst_value="True">$(arg robot_control)</rosparam>
         <rosparam param="eye_motion_online"     subst_value="True">$(arg eye_motion_online)</rosparam>
-        <rosparam param="fake_rest"             subst_value="True">$(arg fake_rest)</rosparam>
+        <rosparam param="fake_rest"             subst_value="True">$(arg fake_rest)</rosparam> 
+        <rosparam param="eye_detection"             subst_value="True">$(arg eye_detection)</rosparam>
     </node>
             
 
@@ -90,43 +125,6 @@
         <param name="~filepath"  value="$(arg filepath)"/>
     </node>
 
-
-    <!-- EYE_DECODER, CALIBRATION AND CAMERA -->
-    <arg name="eye_detection" default='false'/>
-    <arg name="realsense_camera" default='false'/>
-    <group if="$(arg eye_detection)">
-        <!-- Eye_decoder arguments -->
-            <arg name="cam_source"                  default='0'/> <!-- 4 -->
-            <arg name="blink_threshold"             default='0.52'/>
-            <arg name="rate"                        default='256'/>
-            <arg name="show_frame"                  default='True'/>
-
-        <!-- Realsense camera node -->
-        <group if="$(arg realsense_camera)">
-            <include file="$(find realsense2_camera)/launch/rs_camera.launch" >
-                <arg name="initial_reset"    value="true"/>
-                <arg name="enable_depth"     value="false"/>
-            </include>
-        </group>
-
-        <!-- Eye decoder node -->
-        <node name="eye_decoder" pkg="eye_decoder" type="eye_decoder_node.py" output="screen" >
-            <param name="realsense_camera"    type="bool"              value="$(arg realsense_camera)"/>
-            <param name="cam_source"          type="int"               value="$(arg cam_source)" if="$(eval not realsense_camera)" />
-            <param name="rate"                type="int"               value="$(arg rate)"/>
-            <param name="show_frame"          type="bool"              value="$(arg show_frame)"/>
-            <param name="blink_threshold"     type="double"            value="$(arg blink_threshold)"/>
-        </node>
-
-        <!-- Eye calibration online node -->
-        <group if="$(arg eye_motion_online)">
-            <node pkg="eye_motion_online" type="online_eye_node" name="online_eye_node" output="screen">
-                <rosparam param="classes"  subst_value="True">$(arg calibration_classes)</rosparam>
-                <rosparam param="th_frame" subst_value="True">$(arg th_frame)</rosparam>
-            </node>
-        </group>
-    </group>
-    
 
     <!-- ROSBAG -->
     <!-- rosbag recording node -->
