@@ -57,7 +57,7 @@
         <param name="samplerate"    value='$(arg samplerate)'/>
         <param name="filter_order"  value="$(arg filter_order)"/>
         <param name="filters_band"  value="$(arg filters_band)"/>
-        <param name="~modality"     value="$(arg modality_usage)"/>
+        <param name="modality"     value="$(arg modality_usage)"/>
     </node>
 
 
@@ -95,7 +95,7 @@
         <arg name="circlePositions"  default="-1.65 -0.8; 1.65 -0.8"/>
         <!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; -1.3 0.85; 1.3 0.85"/-->
         <arg name="audio_path"       default="$(find feedback_cvsa)/cfg"/>
-        <arg name="robot_control"    default='True'/>
+        <arg name="robot_control"    default='False'/>
         <arg name="audio_cue"        default='True'/>
         <arg name="eye_calibration"  default='False'/> <!-- eye calibration will not start -->
     
@@ -115,6 +115,9 @@
                                                      0.0  0.9"/> <!-- always 0.0 0.0 with 735 as first elem -->
         <arg name="calibration_classes"     default='[735,730,731,732,733,734,736,737,738]'/>
         <arg name="max_trials_per_class"    default='[15, 15]'/>
+    
+    <!-- Check the eye motion online -->
+        <arg name="eye_motion_online" default='false'/>
 
     <!-- node -->
     <node name="trainingCVSA_node" pkg="feedback_cvsa" type="trainingCVSA_node"  output="screen">
@@ -132,13 +135,13 @@
         <rosparam param="init_percentual"       subst_value="True">$(arg init_percentual)</rosparam>
         <rosparam param="robot_control"         subst_value="True">$(arg robot_control)</rosparam>
         <rosparam param="audio_cue"             subst_value="True">$(arg audio_cue)</rosparam>
+        <rosparam param="eye_motion_online"     subst_value="True">$(arg eye_motion_online)</rosparam>
     </node>
 
 
     <!-- EYE_DECODER, CALIBRATION AND CAMERA -->
     <arg name="eye_detection" default='true'/>
-    <arg name="realsense_camera" default='true'/>
-    <arg name="eye_motion_online" default='false'/>
+    <arg name="realsense_camera" default='false'/>
     <group if="$(arg eye_detection)">
         <!-- arguments -->
             <arg name="cam_source"                  default='0'/> <!-- 0 for internal webcam, 4 for external webcam -->
