@@ -61,6 +61,13 @@
     </node>
 
 
+    <!-- IMU node-->
+    <arg name="imu" default="true"/>
+    <group if="$(arg imu)">
+        <node name="imu_cvsa_node" pkg="imu_cvsa" type="imu_cvsa_node" output="screen"/>
+    </group>
+
+
     <!-- EYE_DECODER, CALIBRATION AND CAMERA -->
     <arg name="eye_detection" default='true'/>
     <arg name="realsense_camera" default='true'/>
@@ -171,7 +178,8 @@
         <rosparam param="robot_control"         subst_value="True">$(arg robot_control)</rosparam>
         <rosparam param="audio_cue"             subst_value="True">$(arg audio_cue)</rosparam>
         <rosparam param="eye_motion_online"     subst_value="True">$(arg eye_motion_online)</rosparam>
-        <rosparam param="eye_detection"             subst_value="True">$(arg eye_detection)</rosparam>
+        <rosparam param="eye_detection"         subst_value="True">$(arg eye_detection)</rosparam>
+        <rosparam param="imu"                   subst_value="True">$(arg imu)</rosparam>
     </node>
 
 
