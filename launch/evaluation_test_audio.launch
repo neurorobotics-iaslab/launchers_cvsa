@@ -4,8 +4,8 @@
     <!-- ACQUISITION -->
     <!-- arguments -->
         <arg name="plugin"     default='rosneuro::EGDDevice'/>
-        <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/>
-        <!--arg name="devarg"     default='/home/paolo/prova39ch.gdf'/-->
+        <!--arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/-->
+        <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/>
         <arg name="framerate"  default='16'/>
         <arg name="samplerate" default='512'/>
 
@@ -46,7 +46,7 @@
     <rosparam command="load" file="$(find processing_cvsa)/cfg/ringbuffer.yaml"/>
     <arg name="nchannels"      default='39'/> 
     <arg name="nsamples"       default='32'/>
-    <arg name="modality_usage" default="online" /> <!-- offline (with gdf) or online (with cap) -->
+    <arg name="modality_usage" default="offline" /> <!-- offline (with gdf) or online (with cap) -->
     <arg name="filter_order"   default='4'/>
     <arg name='filters_band'   default='8.0 10.0; 10.0 12.0; 12.0 14.0; 14.0 16.0; 8.0 14.0;'/>
 
@@ -62,7 +62,7 @@
 
 
     <!-- IMU node-->
-    <arg name="imu" default="true"/>
+    <arg name="imu" default="false"/>
     <group if="$(arg imu)">
         <node name="imu_cvsa_node" pkg="imu_cvsa" type="imu_cvsa_node" output="screen"/>
     </group>
@@ -70,7 +70,7 @@
 
     <!-- EYE_DECODER, CALIBRATION AND CAMERA -->
     <arg name="eye_detection" default='true'/>
-    <arg name="realsense_camera" default='true'/>
+    <arg name="realsense_camera" default='false'/>
     <arg name="eye_motion_online" default='false'/> <!-- Check the eye motion online -->
     <group if="$(arg eye_detection)">
         <!-- arguments -->
@@ -111,15 +111,17 @@
     <arg name="classes"          default='[730, 731]'/>
     <arg name="init_percentual"  default="[0.5,0.5]" />
     <arg name="thresholds_rejection" default="[0.5, 0.5]" /> 
-    <!-- exponential -->
+    <!-- exponential
     <arg name="plugin_integrator" default='rosneuro::integrator::Exponential'/>
     <arg name="alpha" default="0.975"/>
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen" >
         <param name="plugin" 	               value="$(arg plugin_integrator)"/>
         <rosparam param="alpha"                subst_value="true">$(arg alpha)</rosparam> 
         <rosparam param="thresholds_rejection" subst_value="true">$(arg thresholds_rejection)</rosparam>
+        <rosparam param="init_percentual" subst_value="True">$(arg init_percentual)</rosparam>
     </node>
-    <!-- buffer 
+     -->
+    <!-- buffer -->
     <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
     <arg name="buffer_size"      default="48" /> 
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen" >
@@ -129,7 +131,7 @@
         <rosparam param="init_percentual" subst_value="True">$(arg init_percentual)</rosparam>
         <rosparam param="thresholds_rejection"   subst_value="True">$(arg thresholds_rejection)</rosparam> 
     </node>
-    -->
+    
 
     <!-- QDA DECODER -->
     <!-- arguments -->
@@ -150,7 +152,7 @@
         <arg name="circlePositions"  default="-1.65 -0.8; 1.65 -0.8"/>
         <!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; -1.3 0.85; 1.3 0.85"/-->
         <arg name="audio_path"       default="$(find feedback_cvsa)/cfg"/>
-        <arg name="robot_control"    default='True'/>
+        <arg name="robot_control"    default='False'/>
         <arg name="audio_cue"        default='True'/>
         <arg name="eye_calibration"  default='False'/> <!-- eye calibration will not start -->
     
@@ -205,6 +207,17 @@
     <!--node pkg="ur_cvsa" type="ur_cvsa_node" name="ur_cvsa_node" if="$(arg robot_control)" output="screen">
         <rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
     </node-->
+
+    <!-- TEST  -->
+	<!-- arguments -->
+	<arg name="path_save_data" default="/home/paolo/cvsa_ws/record/c7" /> 
+
+	<!-- node -->
+	<node name="test_pipeline" pkg="test_pipeline" type="test_pipeline_node" output="screen" >
+		<param name="~filters_band" 	  value="$(arg filters_band)"/>
+        <param name="~qda_path" value="$(arg path_qda_decoder)"/>
+		<param name="~path_save_data" value="$(arg path_save_data)"/>
+	</node>
     
 
 </launch>
