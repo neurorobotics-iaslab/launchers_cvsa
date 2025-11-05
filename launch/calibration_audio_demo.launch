@@ -1,22 +1,22 @@
 <?xml version="1.0"?>
 <launch>
 
-    <!-- IMU node-->
+    <!-- IMU node--> <!-- to test it /usr/local/xsens/examples/mtsdk/xda_cpp ./example_mtw-->
     <arg name="imu" default="false"/>
     <group if="$(arg imu)">
         <node name="imu_cvsa_node" pkg="imu_cvsa" type="imu_cvsa_node" output="screen"/>
     </group>
 
     <!-- EYE_DECODER, CALIBRATION AND CAMERA -->
-    <arg name="eye_detection" default='true'/>
-    <arg name="realsense_camera" default='true'/>
+    <arg name="eye_detection" default='false'/>
+    <arg name="realsense_camera" default='false'/>
     <arg name="eye_motion_online" default='false'/> <!-- Check the eye motion online -->
     <group if="$(arg eye_detection)">
         <!-- Eye_decoder arguments -->
             <arg name="cam_source"                  default='0'/> <!-- 4 -->
             <arg name="blink_threshold"             default='0.52'/>
             <arg name="rate"                        default='256'/>
-            <arg name="show_frame"                  default='true'/>
+            <arg name="show_frame"                  default='False'/>
 
         <!-- Realsense camera node -->
         <group if="$(arg realsense_camera)">
@@ -94,12 +94,11 @@
     </node>
             
 
-
     <!-- ACQUISITION-->
     <!-- Acquisition arguments -->
         <arg name="plugin"     default='rosneuro::EGDDevice'/>
-        <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/>
-        <!-- <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/>  -->
+        <!--arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/-->
+        <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/>
         <arg name="framerate"  default='16'/>
         <arg name="samplerate" default='512'/>
 
@@ -114,7 +113,7 @@
 
     <!-- RECORDER-->
     <!-- Protocol arguments -->
-        <arg name="subject"   default="i7"/>
+        <arg name="subject"   default="test"/>
         <arg name="task"      default="cvsa_lbrb"/>
         <arg name="extra"     default=""/>
     <!-- Recorder arguments -->
@@ -133,20 +132,5 @@
         <param name="~filepath"  value="$(arg filepath)"/>
     </node>
 
-
-    <!-- ROSBAG -->
-    <!-- rosbag recording node -->
-    <node pkg="bag_cvsa" type="save_bag.py" name="save_bag" output="screen">
-        <rosparam param="filepath" subst_value="True">$(arg filepath)</rosparam>
-        <rosparam param="subject"  subst_value="True">$(arg subject)</rosparam>
-    </node>
-
-
-    <!-- UR CONTROL --> <!-- it runs on another pc -->
-    <!-- node -->
-    <!--node pkg="ur_cvsa" type="ur_cvsa_node" name="ur_cvsa_node" if="$(arg robot_control)" output="screen">
-        <rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
-    </node-->
     
-
 </launch>

@@ -23,7 +23,7 @@
         <arg name="autostart" default='true'/>
         <arg name="filepath"  default='/home/paolo/cvsa_ws/record' />
     <!-- arguments protocol -->
-        <arg name="subject"   default="c7"/> <!-- depends on the user -->
+        <arg name="subject"   default="f2"/> <!-- depends on the user -->
         <arg name="task"      default="cvsa_lbrb"/>
         <arg name="extra"     default=""/>
         <arg name="modality"  default='evaluation'/>
@@ -37,7 +37,7 @@
     <!-- node -->
     <node name="recorder" pkg="rosneuro_recorder" type="recorder" >
         <param name="~autostart" value="$(arg autostart)"/>
-        <param name="~filepath" value="$(arg filepath)"/>
+        <param name="~filepath" value="$(arg filepath)/$(arg subject)"/>
     </node>
 
 
@@ -113,12 +113,15 @@
     <arg name="thresholds_rejection" default="[0.5, 0.5]" /> 
     <!-- exponential -->
     <arg name="plugin_integrator" default='rosneuro::integrator::Exponential'/>
-    <arg name="alpha" default="0.975"/>
+    <arg name="alpha" default="0.98"/>
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen" >
         <param name="plugin" 	               value="$(arg plugin_integrator)"/>
+        <rosparam param="init_percentual" subst_value="True">$(arg init_percentual)</rosparam>
         <rosparam param="alpha"                subst_value="true">$(arg alpha)</rosparam> 
         <rosparam param="thresholds_rejection" subst_value="true">$(arg thresholds_rejection)</rosparam>
     </node>
+    
+    
     <!-- buffer 
     <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
     <arg name="buffer_size"      default="48" /> 
@@ -133,7 +136,7 @@
 
     <!-- QDA DECODER -->
     <!-- arguments -->
-    <arg name="path_qda_decoder" default="$(find qda_cvsa)/cfg/qda_c7_lbp_20250217.yaml" />
+    <arg name="path_qda_decoder" default="$(find qda_cvsa)/cfg/qda_f2_lbp_20250304.yaml" />
 
     <!-- node -->
     <node name="qda" pkg="qda_cvsa" type="qda.py" output="screen" >
@@ -144,7 +147,7 @@
 
     <!-- FEEDBACK -->
     <!-- visual and audio feedback arguments -->
-        <arg name="thresholds"       default='[0.75, 0.75]'/> <!-- depends on the user -->
+        <arg name="thresholds"       default='[0.66, 0.75]'/> <!-- depends on the user -->
         <arg name="trials"           default='[10, 10]'/>
         <!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; 0.0 0.65"/-->
         <arg name="circlePositions"  default="-1.65 -0.8; 1.65 -0.8"/>
