@@ -2,9 +2,9 @@
 <launch>
 	<!-- acquisition arguments -->
 	<arg name="plugin" 	default='rosneuro::EGDDevice'/>
-	<!-- <arg name="devarg" 	default='eego|EEG_MASK|0xE1FFB760F731C675'/> -->
+	<arg name="devarg" 	default='eego|EEG_MASK|0xE1FFB760F731C675'/>
 	<!-- <arg name="devarg" 	default='gtec'/> -->
-	<arg name="devarg"     default='/home/paolo/prova39ch.gdf'/>
+	<!-- <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/> -->
 	<arg name="framerate" 	default='16'/>
 	<arg name="samplerate" default='512'/>	
 	
