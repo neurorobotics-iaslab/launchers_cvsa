@@ -25,7 +25,7 @@
         <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record/$(arg subject)' />
     <!-- arguments protocol -->
         <arg name="task"      default="cvsa_lbrb"/>
-        <arg name="extra"     default=""/>
+        <arg name="extra"     default="exponential"/>
         <arg name="modality"  default='evaluation'/>
 
     <!-- parameters parameters -->
@@ -119,7 +119,7 @@
 
     <!-- ICNIC (GMM) -->
     <!-- arguments -->
-    <arg name="path_gmm_model" default='$(find gmm_cvsa)/cfg/gmm_c7_26112025_102244.yaml'/> 
+    <arg name="path_gmm_model" default='$(find gmm_cvsa)/cfg/gmm_c7_28112025_144152.yaml'/> 
 
     <!-- node -->
     <node name="gmm_node" pkg="gmm_cvsa" type="gmm.py" output="screen"> 
@@ -129,7 +129,7 @@
 
     <!-- CLASSIFIER RAW (QDA)-->
     <!-- arguments -->
-    <arg name="path_qda_model" default='$(find qda_cvsa)/cfg/qda_c7_20112025_152158.yaml'/> 
+    <arg name="path_qda_model" default='$(find qda_cvsa)/cfg/qda_c7_28112025_144152.yaml'/> 
 
     <!-- node -->
     <node name="qda_node" pkg="qda_cvsa" type="qda.py" output="screen"> 
