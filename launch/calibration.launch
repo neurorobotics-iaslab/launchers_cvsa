@@ -3,7 +3,7 @@
 
     <!-- RECORDER-->
     <!-- Protocol arguments -->
-    <arg name="subject"   default="c7"/>
+    <arg name="subject"   default="m1"/>
     <arg name="task"      default="cvsa_lbrb"/>
     <arg name="extra"     default=""/>
     <arg name="modality"         default='calibration'/>

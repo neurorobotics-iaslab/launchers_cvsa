@@ -4,8 +4,8 @@
     <!-- ACQUISITION -->
     <!-- arguments -->
         <arg name="plugin"     default='rosneuro::EGDDevice'/>
-        <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/>
-        <!-- <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/> -->
+        <!-- <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/> -->
+        <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/>
         <arg name="framerate"  default='16'/>
         <arg name="samplerate" default='512'/>
 
@@ -21,7 +21,7 @@
     <!-- RECORDER -->
     <!-- arguments recorder -->
         <arg name="autostart" default='true'/>
-        <arg name="subject"   default="c7"/> <!-- depends on the user  --> 
+        <arg name="subject"   default="d7"/> <!-- depends on the user  --> 
         <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record/$(arg subject)' />
     <!-- arguments protocol -->
         <arg name="task"      default="cvsa_lbrb"/>
@@ -92,7 +92,7 @@
     <arg name="chunkSize" default='32'/>
     <arg name="execution_mode" default='online'/> <!-- online/offline -->
     <arg name="filter_order" default='4'/>
-    <arg name='filters_band' default='8.0 14.0;'/>
+    <arg name='filters_band' default='8.0 11.0;'/>
     <arg name="EOG_ch" default='[1,2,19]'/> <!-- FP1, FP2, EOG -->
 
     <!-- node -->
@@ -103,7 +103,7 @@
         <param name="filter_order" value="$(arg filter_order)"/>
         <param name="modality" value="$(arg execution_mode)"/>
         <param name="filters_band"           value="$(arg filters_band)"/>
-        <param name="EOG_ch"           value="$(arg EOG_ch)"/>
+        <rosparam param="EOG_ch" subst_value="True">$(arg EOG_ch)</rosparam> 
     </node>
 
 
@@ -121,7 +121,7 @@
 
     <!-- ICNIC (GMM) -->
     <!-- arguments -->
-    <arg name="path_gmm_model" default='$(find gmm_cvsa)/cfg/gmm_c7_03122025_110613.yaml'/>  
+    <arg name="path_gmm_model" default='$(find gmm_cvsa)/cfg/gmm_d7_12122025_112456.yaml'/>  
 
     <!-- node -->
     <node name="gmm_node" pkg="gmm_cvsa" type="gmm.py" output="screen"> 
@@ -131,7 +131,7 @@
 
     <!-- CLASSIFIER RAW (QDA)-->
     <!-- arguments -->
-    <arg name="path_qda_model" default='$(find qda_cvsa)/cfg/qda_c7_03122025_110613.yaml'/>  
+    <arg name="path_qda_model" default='$(find qda_cvsa)/cfg/qda_d7_12122025_112456.yaml'/>  
 
     <!-- node -->
     <node name="qda_node" pkg="qda_cvsa" type="qda.py" output="screen"> 
@@ -147,7 +147,7 @@
     <arg name="ic_class_label" default='1'/> 
     <!-- buffer -->
     <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
-    <arg name="bufferSize"  default="64" /> <!-- in samples, remember 16 hz and /2 since we start at 0.5 -->
+    <arg name="bufferSize"  default="48" /> <!-- in samples, remember 16 hz and /2 since we start at 0.5 -->
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen" >
         <param name="plugin"              value="$(arg plugin_integrator)"/>
         <rosparam param="classes"         subst_value="True">$(arg classes)</rosparam>
