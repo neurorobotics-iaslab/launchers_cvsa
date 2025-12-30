@@ -26,8 +26,8 @@
     <!-- ACQUISITION-->
     <!-- Acquisition arguments -->
     <arg name="plugin"     default='rosneuro::EGDDevice'/>
-    <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/>
-    <!-- <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/>  -->
+    <!-- <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/> -->
+    <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/> 
     <arg name="framerate"  default='16'/>
     <arg name="samplerate" default='512'/>
 
@@ -117,6 +117,8 @@
     <arg name="audio_cue"        default="True"/>
     <arg name="robot_control"    default='False'/>  <!-- Robot control -->
     <arg name="fake_rest"        default='False'/>  <!-- Fake rest -->
+    <arg name="audio_increasing" default='False'/> 
+    <arg name="audio_name_cf"    default='cf_pink_noise.wav'/>  
 
     <!-- Eye calibration online arguments -->
     <arg name="eye_calibration"         default='false'/> <!-- if false the eye calibration isn't done -->
@@ -146,6 +148,8 @@
         <rosparam param="max_trials_per_class"  subst_value="True">$(arg max_trials_per_class)</rosparam> 
         <rosparam param="audio_path"            subst_value="True">$(arg audio_path)</rosparam>
         <rosparam param="audio_cue"             subst_value="True">$(arg audio_cue) </rosparam>
+        <rosparam param="audio_increasing"      subst_value="True">$(arg audio_increasing) </rosparam>
+        <rosparam param="audio_name_cf"         subst_value="True">$(arg audio_name_cf) </rosparam>
         <rosparam param="robot_control"         subst_value="True">$(arg robot_control)</rosparam>
         <rosparam param="eye_motion_online"     subst_value="True">$(arg eye_motion_online)</rosparam>
         <rosparam param="fake_rest"             subst_value="True">$(arg fake_rest)</rosparam> 
