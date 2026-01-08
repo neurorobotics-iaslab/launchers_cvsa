@@ -44,7 +44,7 @@
     <!-- IMU node-->
     <arg name="imu" default="false"/>
     <group if="$(arg imu)">
-        <node name="imu_cvsa_node" pkg="imu_cvsa" type="imu_cvsa_node" output="screen"/>
+        <node name="imu_bci_node" pkg="imu_bci" type="imu_bci_node" output="screen"/>
     </group>    
 
 
@@ -87,7 +87,7 @@
 
 
     <!-- PROCESSING -->
-    <rosparam command="load" file="$(find launchers_cvsa)/cfg/ringbuffer.yaml"/>
+    <rosparam command="load" file="$(find launchers_bci)/cfg/ringbuffer.yaml"/>
     <arg name="nchannels" default='39'/>
     <arg name="chunkSize" default='32'/>
     <arg name="execution_mode" default='online'/> <!-- online/offline -->
@@ -96,7 +96,7 @@
     <arg name="EOG_ch" default='[1,2,19]'/> <!-- FP1, FP2, EOG -->
 
     <!-- node -->
-    <node name="processing_cvsa_node" pkg="processing_cvsa" type="processing_cvsa_node" output="screen"> 
+    <node name="processing_bci_node" pkg="processing_bci" type="processing_bci_node" output="screen"> 
         <param name="nchannels"   value="$(arg nchannels)"/>
         <param name="chunkSize"       value="$(arg chunkSize)"/>
         <param name="samplerate"  value='$(arg samplerate)'/>
@@ -109,10 +109,10 @@
 
     <!-- ARTIFACTS -->
     <!-- arguments -->
-    <rosparam command="load" file="$(find launchers_cvsa)/cfg/artifact.yaml"/>
+    <rosparam command="load" file="$(find launchers_bci)/cfg/artifact.yaml"/>
 
     <!-- node -->
-    <node name="artifactDetector_node" pkg="artifacts_cvsa" type="artifactDetector_node" output="screen"> 
+    <node name="artifactDetector_node" pkg="artifacts_bci" type="artifactDetector_node" output="screen"> 
         <param name="nchannels"   value="$(arg nchannels)"/>
         <param name="chunkSize"       value="$(arg chunkSize)"/>
         <param name="modality" value="$(arg execution_mode)"/>
@@ -121,27 +121,27 @@
 
     <!-- ICNIC (GMM) -->
     <!-- arguments -->
-    <arg name="path_gmm_model" default='$(find gmm_cvsa)/cfg/gmm_test_mi.yaml'/>  
+    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/gmm_test_mi.yaml'/>  
 
     <!-- node -->
-    <node name="gmm_node" pkg="gmm_cvsa" type="gmm.py" output="screen"> 
+    <node name="gmm_node" pkg="gmm_bci" type="gmm.py" output="screen"> 
         <param name="path_gmm_model"   value="$(arg path_gmm_model)"/>
     </node>
 
 
     <!-- CLASSIFIER RAW (QDA)-->
     <!-- arguments -->
-    <arg name="path_qda_model" default='$(find qda_cvsa)/cfg/qda_test_mi.yaml'/>  
+    <arg name="path_qda_model" default='$(find qda_bci)/cfg/qda_test_mi.yaml'/>  
 
     <!-- node -->
-    <node name="qda_node" pkg="qda_cvsa" type="qda.py" output="screen"> 
+    <node name="qda_node" pkg="qda_bci" type="qda.py" output="screen"> 
         <param name="path_qda_model"   value="$(arg path_qda_model)"/>
     </node>
 
 
     <!-- INTEGRATOR -->
     <!-- arguments -->
-    <arg name="classes"          default='[730, 731]'/>
+    <arg name="classes"          default='[769, 770]'/>
     <arg name="init_percentual"  default="[0.5,0.5]" />
     <arg name="ic_threshold" default='0.7'/>
     <arg name="ic_class_label" default='1'/> 
@@ -172,7 +172,7 @@
 
 
     <!-- ROSBAG -->
-    <node pkg="bag_cvsa" type="save_bag.py" name="save_bag" output="screen">
+    <node pkg="bag_bci" type="save_bag.py" name="save_bag" output="screen">
         <rosparam param="filepath" subst_value="True">$(arg filepath)</rosparam>
         <rosparam param="subject"  subst_value="True">$(arg subject)</rosparam>
     </node>
@@ -180,7 +180,7 @@
 
     <!-- UR CONTROL --> <!-- it runs on another pc -->
     <!-- node -->
-    <!--node pkg="ur_cvsa" type="ur_cvsa_node" name="ur_cvsa_node" if="$(arg robot_control)" output="screen">
+    <!--node pkg="ur_bci" type="ur_bci_node" name="ur_bci_node" if="$(arg robot_control)" output="screen">
         <rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
     </node-->
     
