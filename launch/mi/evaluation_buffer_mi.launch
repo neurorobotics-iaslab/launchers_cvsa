@@ -5,7 +5,8 @@
     <!-- arguments -->
         <arg name="plugin"     default='rosneuro::EGDDevice'/>
         <!-- <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/> -->
-        <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/>
+        <!-- <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/> -->
+        <arg name="devarg"     default='gtec'/>
         <arg name="framerate"  default='16'/>
         <arg name="samplerate" default='512'/>
 
@@ -21,7 +22,7 @@
     <!-- RECORDER -->
     <!-- arguments recorder -->
         <arg name="autostart" default='true'/>
-        <arg name="subject"   default="test"/> <!-- depends on the user  --> 
+        <arg name="subject"   default="c7"/> <!-- depends on the user  --> 
         <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record_mi/$(arg subject)' />
     <!-- arguments protocol -->
         <arg name="task"      default="mi_lhrh"/>
@@ -87,13 +88,15 @@
 
 
     <!-- PROCESSING -->
+    <rosparam command="load" file="$(find launchers_bci)/cfg/car.yaml"/>
     <rosparam command="load" file="$(find launchers_bci)/cfg/ringbuffer.yaml"/>
-    <arg name="nchannels" default='39'/>
+    <arg name="nchannels" default='16'/>
     <arg name="chunkSize" default='32'/>
     <arg name="execution_mode" default='online'/> <!-- online/offline -->
     <arg name="filter_order" default='4'/>
-    <arg name='filters_band' default='8.0 11.0;'/>
-    <arg name="EOG_ch" default='[1,2,19]'/> <!-- FP1, FP2, EOG -->
+    <arg name='filters_band' default='8.0 13.0;
+                                     18.0 24.0;'/>
+    <arg name="EOG_ch" default='[12,16]'/> <!-- FP1, FP2 -->
 
     <!-- node -->
     <node name="processing_bci_node" pkg="processing_bci" type="processing_bci_node" output="screen"> 
@@ -109,7 +112,7 @@
 
     <!-- ARTIFACTS -->
     <!-- arguments -->
-    <rosparam command="load" file="$(find launchers_bci)/cfg/artifact.yaml"/>
+    <rosparam command="load" file="$(find launchers_bci)/cfg/artifact_mi.yaml"/>
 
     <!-- node -->
     <node name="artifactDetector_node" pkg="artifacts_bci" type="artifactDetector_node" output="screen"> 
@@ -121,7 +124,7 @@
 
     <!-- ICNIC (GMM) -->
     <!-- arguments -->
-    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/gmm_test_mi.yaml'/>  
+    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/gmm_c7_14012026_165731_mi.yaml'/>  
 
     <!-- node -->
     <node name="gmm_node" pkg="gmm_bci" type="gmm.py" output="screen"> 
@@ -131,7 +134,7 @@
 
     <!-- CLASSIFIER RAW (QDA)-->
     <!-- arguments -->
-    <arg name="path_qda_model" default='$(find qda_bci)/cfg/qda_test_mi.yaml'/>  
+    <arg name="path_qda_model" default='$(find qda_bci)/cfg/qda_c7_14012026_165731_mi.yaml'/>  
 
     <!-- node -->
     <node name="qda_node" pkg="qda_bci" type="qda.py" output="screen"> 
