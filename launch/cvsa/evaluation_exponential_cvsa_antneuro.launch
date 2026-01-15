@@ -4,9 +4,8 @@
     <!-- ACQUISITION -->
     <!-- arguments -->
         <arg name="plugin"     default='rosneuro::EGDDevice'/>
-        <!-- <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/> -->
+        <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/>
         <!-- <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/> -->
-        <arg name="devarg"     default='gtec'/>
         <arg name="framerate"  default='16'/>
         <arg name="samplerate" default='512'/>
 
@@ -22,11 +21,11 @@
     <!-- RECORDER -->
     <!-- arguments recorder -->
         <arg name="autostart" default='true'/>
-        <arg name="subject"   default="c7"/> <!-- depends on the user  --> 
-        <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record_mi/$(arg subject)' />
+        <arg name="subject"   default="c7"/> <!-- depends on the user -->
+        <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record/$(arg subject)' />
     <!-- arguments protocol -->
-        <arg name="task"      default="mi_lhrh"/>
-        <arg name="extra"     default="buffer"/>
+        <arg name="task"      default="cvsa_lbrb"/>
+        <arg name="extra"     default="exponential"/>
         <arg name="modality"  default='evaluation'/>
 
     <!-- parameters parameters -->
@@ -88,15 +87,12 @@
 
 
     <!-- PROCESSING -->
-    <rosparam command="load" file="$(find launchers_bci)/cfg/car.yaml"/>
     <rosparam command="load" file="$(find launchers_bci)/cfg/ringbuffer.yaml"/>
-    <arg name="nchannels" default='16'/>
+    <arg name="nchannels" default='39'/>
     <arg name="chunkSize" default='32'/>
-    <arg name="execution_mode" default='online'/> <!-- online/offline -->
+    <arg name="execution_mode" default='online'/> <!-- offline / online -->
     <arg name="filter_order" default='4'/>
-    <arg name='filters_band' default='8.0 13.0;
-                                     18.0 24.0;'/>
-    <arg name="EOG_ch" default='[12,16]'/> <!-- FP1, FP2 -->
+    <arg name='filters_band' default='8.0 14.0;'/>
 
     <!-- node -->
     <node name="processing_bci_node" pkg="processing_bci" type="processing_bci_node" output="screen"> 
@@ -106,13 +102,12 @@
         <param name="filter_order" value="$(arg filter_order)"/>
         <param name="modality" value="$(arg execution_mode)"/>
         <param name="filters_band"           value="$(arg filters_band)"/>
-        <rosparam param="EOG_ch" subst_value="True">$(arg EOG_ch)</rosparam> 
     </node>
 
 
     <!-- ARTIFACTS -->
     <!-- arguments -->
-    <rosparam command="load" file="$(find launchers_bci)/cfg/artifact_mi.yaml"/>
+    <rosparam command="load" file="$(find launchers_bci)/cfg/artifact_antneuro.yaml"/>
 
     <!-- node -->
     <node name="artifactDetector_node" pkg="artifacts_bci" type="artifactDetector_node" output="screen"> 
@@ -124,7 +119,7 @@
 
     <!-- ICNIC (GMM) -->
     <!-- arguments -->
-    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/gmm_c7_14012026_165731_mi.yaml'/>  
+    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/gmm_c7_03122025_110613.yaml'/> 
 
     <!-- node -->
     <node name="gmm_node" pkg="gmm_bci" type="gmm.py" output="screen"> 
@@ -134,7 +129,7 @@
 
     <!-- CLASSIFIER RAW (QDA)-->
     <!-- arguments -->
-    <arg name="path_qda_model" default='$(find qda_bci)/cfg/qda_c7_14012026_165731_mi.yaml'/>  
+    <arg name="path_qda_model" default='$(find qda_bci)/cfg/qda_c7_03122025_110613.yaml'/> 
 
     <!-- node -->
     <node name="qda_node" pkg="qda_bci" type="qda.py" output="screen"> 
@@ -144,33 +139,76 @@
 
     <!-- INTEGRATOR -->
     <!-- arguments -->
-    <arg name="classes"          default='[769, 770]'/>
+    <arg name="classes"          default='[730, 731]'/>
     <arg name="init_percentual"  default="[0.5,0.5]" />
     <arg name="ic_threshold" default='0.7'/>
     <arg name="ic_class_label" default='1'/> 
-    <!-- buffer node -->
-    <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
-    <arg name="bufferSize"  default="48" /> <!-- in samples, remember 16 hz and /2 since we start at 0.5 -->
+    <arg name="thresholds_rejection" default="[0.5, 0.5]" /> 
+    <!-- exponential -->
+    <arg name="plugin_integrator" default='rosneuro::integrator::Exponential'/>
+    <arg name="alpha" default="0.98"/>
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen" >
-        <param name="plugin"              value="$(arg plugin_integrator)"/>
-        <rosparam param="classes"         subst_value="True">$(arg classes)</rosparam>
-        <rosparam param="init_val" subst_value="True">$(arg init_percentual)</rosparam> 
+        <param name="plugin" 	               value="$(arg plugin_integrator)"/>
+        <rosparam param="init_percentual" subst_value="True">$(arg init_percentual)</rosparam>
+        <rosparam param="alpha"                subst_value="true">$(arg alpha)</rosparam> 
+        <rosparam param="thresholds_rejection" subst_value="true">$(arg thresholds_rejection)</rosparam>
         <param name="ic_threshold"       value="$(arg ic_threshold)"/>
         <param name="ic_class_label"       value="$(arg ic_class_label)"/>
-        <param name="buffer_size"       value="$(arg bufferSize)"/>
     </node>
-
+    
 
     <!-- FEEDBACK -->
-    <!-- arguments -->
-    <arg name="thresholds"       default='[1, 1]'/> <!-- depends on the user -->
-    <arg name="trials"           default='[10, 10]'/>
+    <!-- visual and audio feedback arguments -->
+        <arg name="thresholds"       default='[0.7, 0.7]'/> <!-- depends on the user -->
+        <arg name="trials"           default='[10, 10]'/>
+        <!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; 0.0 0.65"/-->
+        <arg name="circlePositions"  default="-1.65 -0.8; 1.65 -0.8"/>
+        <!--arg name="circlePositions"  default="-1.3 -0.75; 1.3 -0.75; -1.3 0.85; 1.3 0.85"/-->
+        <arg name="audio_path"       default="$(find feedback_bci)/cfg"/>
+        <arg name="robot_control"    default='False'/>
+        <arg name="audio_cue"        default='True'/>
+        <arg name="eye_calibration"  default='False'/> <!-- eye calibration will not start -->
+        <arg name="audio_increasing" default='True'/> 
+        <arg name="audio_name_cf"    default='cf_pink_noise.wav'/> 
+    
+    <!-- positive feedback arguments -->
+        <arg name="positive_feedback" default='False'/>
+
+    <!-- eye calibration arguments -->
+        <arg name="th_frame"               default='3'/>
+        <arg name="calibration_positions"  default="0.0 0.0; 
+                                 -1.65 -0.8;
+                                                     1.65 -0.8;
+                                                     0.0 -0.8;
+                                                    -1.65 0.0;
+                                                     1.65 0.0;
+                                                    -1.65 0.9;
+                                                     1.65 0.9;
+                                                     0.0  0.9"/> <!-- always 0.0 0.0 with 735 as first elem -->
+        <arg name="calibration_classes"     default='[735,730,731,732,733,734,736,737,738]'/>
+        <arg name="max_trials_per_class"    default='[15, 15]'/>
+
     <!-- node -->
-    <node name="trainingwheel" pkg="rosneuro_feedback_wheel" type="trainingwheel"  output="screen">
-        <rosparam param="modality" subst_value="True">$(arg modality)</rosparam>
-        <rosparam param="thresholds" subst_value="True">$(arg thresholds)</rosparam>
-        <rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
-        <rosparam param="trials" subst_value="True">$(arg trials)</rosparam>
+    <node name="trainingCVSA_node" pkg="feedback_bci" type="trainingCVSA_node"  output="screen">
+        <rosparam param="modality"              subst_value="True">$(arg modality)</rosparam>
+        <rosparam param="thresholds"            subst_value="True">$(arg thresholds)</rosparam>
+        <rosparam param="classes"               subst_value="True">$(arg classes)</rosparam>
+        <rosparam param="trials"                subst_value="True">$(arg trials)</rosparam>
+        <rosparam param="circlePositions"       subst_value="True">$(arg circlePositions)</rosparam>
+        <rosparam param="eye_calibration"       subst_value="True">$(arg eye_calibration)</rosparam>
+        <rosparam param="calibration_positions" subst_value="True">$(arg calibration_positions)</rosparam>
+        <rosparam param="calibration_classes"   subst_value="True">$(arg calibration_classes)</rosparam> 
+        <rosparam param="max_trials_per_class"  subst_value="True">$(arg max_trials_per_class)</rosparam> 
+        <rosparam param="audio_path"            subst_value="True">$(arg audio_path)</rosparam>
+        <rosparam param="audio_increasing"      subst_value="True">$(arg audio_increasing) </rosparam>
+        <rosparam param="audio_name_cf"         subst_value="True">$(arg audio_name_cf) </rosparam>
+        <rosparam param="positive_feedback"     subst_value="True">$(arg positive_feedback)</rosparam>
+        <rosparam param="init_percentual"       subst_value="True">$(arg init_percentual)</rosparam>
+        <rosparam param="robot_control"         subst_value="True">$(arg robot_control)</rosparam>
+        <rosparam param="audio_cue"             subst_value="True">$(arg audio_cue)</rosparam>
+        <rosparam param="eye_motion_online"     subst_value="True">$(arg eye_motion_online)</rosparam>
+        <rosparam param="eye_detection"         subst_value="True">$(arg eye_detection)</rosparam>
+        <rosparam param="imu"                   subst_value="True">$(arg imu)</rosparam>
     </node>
 
 
