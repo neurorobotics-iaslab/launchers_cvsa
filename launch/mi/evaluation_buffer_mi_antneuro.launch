@@ -1,0 +1,190 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- ACQUISITION -->
+    <!-- arguments -->
+        <arg name="plugin"     default='rosneuro::EGDDevice'/>
+        <!-- <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/> -->
+        <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/>
+        <arg name="framerate"  default='16'/>
+        <arg name="samplerate" default='512'/>
+
+    <!-- aquisition node -->
+    <node name="acquisition" pkg="rosneuro_acquisition" type="acquisition" output="screen" >
+        <param name="~plugin"       value="$(arg plugin)"/>
+        <param name="~devarg"       value="$(arg devarg)"/>
+        <param name="~samplerate"   value="$(arg samplerate)"/>
+        <param name="~framerate"    value="$(arg framerate)"/>
+    </node>
+
+
+    <!-- RECORDER -->
+    <!-- arguments recorder -->
+        <arg name="autostart" default='true'/>
+        <arg name="subject"   default="test"/> <!-- depends on the user  --> 
+        <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record_mi/$(arg subject)' />
+    <!-- arguments protocol -->
+        <arg name="task"      default="mi_lhrh"/>
+        <arg name="extra"     default="buffer"/>
+        <arg name="modality"  default='evaluation'/>
+
+    <!-- parameters parameters -->
+        <rosparam param="/protocol/subject"     subst_value="True">$(arg subject)</rosparam>
+        <rosparam param="/protocol/modality"    subst_value="True">$(arg modality)</rosparam>
+        <rosparam param="/protocol/task"        subst_value="True">$(arg task)</rosparam>
+        <rosparam param="/protocol/extra"       subst_value="True">$(arg extra)</rosparam>
+
+    <!-- node -->
+    <node name="recorder" pkg="rosneuro_recorder" type="recorder" >
+        <param name="~autostart" value="$(arg autostart)"/>
+        <param name="~filepath" value="$(arg filepath)"/>
+    </node>
+
+
+    <!-- IMU node-->
+    <arg name="imu" default="false"/>
+    <group if="$(arg imu)">
+        <node name="imu_bci_node" pkg="imu_bci" type="imu_bci_node" output="screen"/>
+    </group>    
+
+
+    <!-- EYE_DECODER, CALIBRATION AND CAMERA -->
+    <arg name="eye_detection" default='false'/>
+    <arg name="realsense_camera" default='false'/>
+    <arg name="eye_motion_online" default='false'/> <!-- Check the eye motion online -->
+    <group if="$(arg eye_detection)">
+        <!-- arguments -->
+            <arg name="cam_source"                  default='0'/> <!-- 0 for internal webcam, 4 for external webcam -->
+            <arg name="blink_threshold"             default='0.52'/>
+            <arg name="rate"                        default='256'/>
+            <arg name="show_frame"                  default='False'/>
+
+         <!-- Realsense camera node -->
+        <group if="$(arg realsense_camera)">
+            <include file="$(find realsense2_camera)/launch/rs_camera.launch" >
+                <arg name="initial_reset"    value="true"/>
+                <arg name="enable_depth"     value="false"/>
+            </include>
+        </group>
+
+        <!-- Eye decoder node -->
+        <node name="eye_decoder" pkg="eye_decoder" type="eye_decoder_node.py" output="screen" >
+            <param name="realsense_camera"    type="bool"              value="$(arg realsense_camera)"/>
+            <param name="cam_source"          type="int"               value="$(arg cam_source)"  if="$(eval not realsense_camera)" />
+            <param name="rate"                type="int"               value="$(arg rate)"/>
+            <param name="show_frame"          type="bool"              value="$(arg show_frame)"/>
+            <param name="blink_threshold"     type="double"            value="$(arg blink_threshold)"/>
+        </node>
+
+        <!-- Eye calibration online node -->
+        <group if="$(arg eye_motion_online)">
+            <node pkg="eye_motion_online" type="online_eye_node" name="online_eye_node" output="screen">
+                <rosparam param="classes"  subst_value="True">$(arg calibration_classes)</rosparam>
+                <rosparam param="th_frame" subst_value="True">$(arg th_frame)</rosparam>
+            </node>
+        </group>
+    </group>
+
+
+    <!-- PROCESSING -->
+    <rosparam command="load" file="$(find launchers_bci)/cfg/car_mi_antneuro.yaml"/>
+    <rosparam command="load" file="$(find launchers_bci)/cfg/ringbuffer.yaml"/>
+    <arg name="nchannels" default='39'/>
+    <arg name="chunkSize" default='32'/>
+    <arg name="execution_mode" default='online'/> <!-- online/offline -->
+    <arg name="filter_order" default='4'/>
+    <arg name='filters_band' default='8.0 13.0;
+                                     18.0 24.0;'/>
+    <arg name="EOG_ch" default='[1,2]'/> <!-- FP1, FP2 -->
+
+    <!-- node -->
+    <node name="processing_bci_node" pkg="processing_bci" type="processing_bci_node" output="screen"> 
+        <param name="nchannels"   value="$(arg nchannels)"/>
+        <param name="chunkSize"       value="$(arg chunkSize)"/>
+        <param name="samplerate"  value='$(arg samplerate)'/>
+        <param name="filter_order" value="$(arg filter_order)"/>
+        <param name="modality" value="$(arg execution_mode)"/>
+        <param name="filters_band"           value="$(arg filters_band)"/>
+        <rosparam param="EOG_ch" subst_value="True">$(arg EOG_ch)</rosparam> 
+    </node>
+
+
+    <!-- ARTIFACTS -->
+    <!-- arguments -->
+    <rosparam command="load" file="$(find launchers_bci)/cfg/artifact_mi_antneuro.yaml"/>
+
+    <!-- node -->
+    <node name="artifactDetector_node" pkg="artifacts_bci" type="artifactDetector_node" output="screen"> 
+        <param name="nchannels"   value="$(arg nchannels)"/>
+        <param name="chunkSize"       value="$(arg chunkSize)"/>
+        <param name="modality" value="$(arg execution_mode)"/>
+    </node>
+
+
+    <!-- ICNIC (GMM) -->
+    <!-- arguments -->
+    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/gmm_pr_15012026_183051_mi.yaml'/>  
+
+    <!-- node -->
+    <node name="gmm_node" pkg="gmm_bci" type="gmm.py" output="screen"> 
+        <param name="path_gmm_model"   value="$(arg path_gmm_model)"/>
+    </node>
+
+
+    <!-- CLASSIFIER RAW (QDA)-->
+    <!-- arguments -->
+    <arg name="path_qda_model" default='$(find qda_bci)/cfg/qda_pr_15012026_183051_mi.yaml'/>  
+
+    <!-- node -->
+    <node name="qda_node" pkg="qda_bci" type="qda.py" output="screen"> 
+        <param name="path_qda_model"   value="$(arg path_qda_model)"/>
+    </node>
+
+
+    <!-- INTEGRATOR -->
+    <!-- arguments -->
+    <arg name="classes"          default='[769, 770]'/>
+    <arg name="init_percentual"  default="[0.5,0.5]" />
+    <arg name="ic_threshold" default='0.7'/>
+    <arg name="ic_class_label" default='1'/> 
+    <!-- buffer node -->
+    <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
+    <arg name="bufferSize"  default="48" /> <!-- in samples, remember 16 hz and /2 since we start at 0.5 -->
+    <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen" >
+        <param name="plugin"              value="$(arg plugin_integrator)"/>
+        <rosparam param="classes"         subst_value="True">$(arg classes)</rosparam>
+        <rosparam param="init_val" subst_value="True">$(arg init_percentual)</rosparam> 
+        <param name="ic_threshold"       value="$(arg ic_threshold)"/>
+        <param name="ic_class_label"       value="$(arg ic_class_label)"/>
+        <param name="buffer_size"       value="$(arg bufferSize)"/>
+    </node>
+
+
+    <!-- FEEDBACK -->
+    <!-- arguments -->
+    <arg name="thresholds"       default='[1, 1]'/> <!-- depends on the user -->
+    <arg name="trials"           default='[10, 10]'/>
+    <!-- node -->
+    <node name="trainingwheel" pkg="rosneuro_feedback_wheel" type="trainingwheel"  output="screen">
+        <rosparam param="modality" subst_value="True">$(arg modality)</rosparam>
+        <rosparam param="thresholds" subst_value="True">$(arg thresholds)</rosparam>
+        <rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
+        <rosparam param="trials" subst_value="True">$(arg trials)</rosparam>
+    </node>
+
+
+    <!-- ROSBAG -->
+    <node pkg="bag_bci" type="save_bag.py" name="save_bag" output="screen">
+        <rosparam param="filepath" subst_value="True">$(arg filepath)</rosparam>
+        <rosparam param="subject"  subst_value="True">$(arg subject)</rosparam>
+    </node>
+
+
+    <!-- UR CONTROL --> <!-- it runs on another pc -->
+    <!-- node -->
+    <!--node pkg="ur_bci" type="ur_bci_node" name="ur_bci_node" if="$(arg robot_control)" output="screen">
+        <rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
+    </node-->
+    
+
+</launch>
