@@ -3,8 +3,8 @@
 
     <!-- RECORDER-->
     <!-- Protocol arguments -->
-    <arg name="subject"   default="test"/>
-    <arg name="task"      default="mi_lhrh"/>
+    <arg name="subject"   default="c7"/>
+    <arg name="task"      default="mi_bhbf"/>
     <arg name="extra"     default=""/>
     <arg name="modality"         default='calibration'/>
     <arg name="classes"          default='[769, 770]'/>

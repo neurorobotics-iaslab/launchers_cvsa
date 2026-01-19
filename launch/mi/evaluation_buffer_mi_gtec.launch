@@ -5,8 +5,8 @@
     <!-- arguments -->
         <arg name="plugin"     default='rosneuro::EGDDevice'/>
         <!-- <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/> -->
-        <arg name="devarg"     default='/home/paolo/prova16ch.gdf'/>
-        <!-- <arg name="devarg"     default='gtec'/> -->
+        <!-- <arg name="devarg"     default='/home/paolo/prova16ch.gdf'/> -->
+        <arg name="devarg"     default='gtec'/>
         <arg name="framerate"  default='16'/>
         <arg name="samplerate" default='512'/>
 
@@ -22,10 +22,10 @@
     <!-- RECORDER -->
     <!-- arguments recorder -->
         <arg name="autostart" default='true'/>
-        <arg name="subject"   default="test"/> <!-- depends on the user  --> 
+        <arg name="subject"   default="c7"/> <!-- depends on the user  --> 
         <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record_mi/$(arg subject)' />
     <!-- arguments protocol -->
-        <arg name="task"      default="mi_lhrh"/>
+        <arg name="task"      default="mi_bhbf"/>
         <arg name="extra"     default="buffer"/>
         <arg name="modality"  default='evaluation'/>
 
@@ -124,7 +124,7 @@
 
     <!-- ICNIC (GMM) -->
     <!-- arguments -->
-    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/gmm_pr_15012026_183051_mi.yaml'/>  
+    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/gmm_c7_19012026_165424_mi.yaml'/>  
 
     <!-- node -->
     <node name="gmm_node" pkg="gmm_bci" type="gmm.py" output="screen"> 
@@ -134,7 +134,7 @@
 
     <!-- CLASSIFIER RAW (QDA)-->
     <!-- arguments -->
-    <arg name="path_qda_model" default='$(find qda_bci)/cfg/qda_pr_15012026_183051_mi.yaml'/>  
+    <arg name="path_qda_model" default='$(find qda_bci)/cfg/qda_c7_19012026_165424_mi.yaml'/>  
 
     <!-- node -->
     <node name="qda_node" pkg="qda_bci" type="qda.py" output="screen"> 
@@ -146,8 +146,9 @@
     <!-- arguments -->
     <arg name="classes"          default='[769, 770]'/>
     <arg name="init_percentual"  default="[0.5,0.5]" />
-    <arg name="ic_threshold" default='0.7'/>
+    <arg name="ic_threshold" default='0.1'/>
     <arg name="ic_class_label" default='1'/> 
+    <arg name="k_gain" default='0.95'/> 
     <!-- buffer node -->
     <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
     <arg name="bufferSize"  default="48" /> <!-- in samples, remember 16 hz and /2 since we start at 0.5 -->
@@ -158,12 +159,13 @@
         <param name="ic_threshold"       value="$(arg ic_threshold)"/>
         <param name="ic_class_label"       value="$(arg ic_class_label)"/>
         <param name="buffer_size"       value="$(arg bufferSize)"/>
+        <param name="k_gain"       value="$(arg k_gain)"/>
     </node>
 
 
     <!-- FEEDBACK -->
     <!-- arguments -->
-    <arg name="thresholds"       default='[1, 1]'/> <!-- depends on the user -->
+    <arg name="thresholds"       default='[0.7, 1]'/> <!-- depends on the user -->
     <arg name="trials"           default='[10, 10]'/>
     <!-- node -->
     <node name="trainingwheel" pkg="rosneuro_feedback_wheel" type="trainingwheel"  output="screen">
