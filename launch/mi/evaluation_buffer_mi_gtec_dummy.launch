@@ -123,18 +123,14 @@
 
 
     <!-- ICNIC (GMM) -->
-    <!-- arguments -->
-    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/gmm_i1_22012026_142400_mi.yaml'/>  
-
     <!-- node -->
-    <node name="gmm_node" pkg="gmm_bci" type="gmm.py" output="screen"> 
-        <param name="path_gmm_model"   value="$(arg path_gmm_model)"/>
+    <node name="gmm_node" pkg="gmm_bci" type="gmm_dummy.py" output="screen"> 
     </node>
 
 
     <!-- CLASSIFIER RAW (QDA)-->
     <!-- arguments -->
-    <arg name="path_qda_model" default='$(find qda_bci)/cfg/qda_i1_22012026_142400_mi.yaml'/>  
+    <arg name="path_qda_model" default='$(find qda_bci)/cfg/qda_i1_22012026_142400_mi_dummy.yaml'/>  
 
     <!-- node -->
     <node name="qda_node" pkg="qda_bci" type="qda.py" output="screen"> 
@@ -148,7 +144,7 @@
     <arg name="init_percentual"  default="[0.5,0.5]" />
     <arg name="ic_threshold" default='0.1'/>
     <arg name="ic_class_label" default='1'/> 
-    <arg name="k_gain" default='2.0'/> 
+    <arg name="k_gain" default='0.93'/> 
     <arg name="increment" default='1'/>  <!-- type of the integrator 1=soft, 0=hard-->
     <!-- buffer node -->
     <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
@@ -167,7 +163,7 @@
 
     <!-- FEEDBACK -->
     <!-- arguments -->
-    <arg name="thresholds"       default='[0.67, 0.74]'/> <!-- depends on the user -->
+    <arg name="thresholds"       default='[0.9, 0.9]'/> <!-- depends on the user -->
     <arg name="trials"           default='[10, 10, 5]'/>
     <!-- node -->
     <node name="trainingwheel" pkg="rosneuro_feedback_wheel" type="trainingwheel"  output="screen">
