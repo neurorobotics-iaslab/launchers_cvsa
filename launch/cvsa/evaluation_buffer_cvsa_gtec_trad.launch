@@ -120,13 +120,9 @@
     </node>
 
 
-    <!-- ICNIC (GMM) -->
-    <!-- arguments -->
-    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/cvsa/gmm_pr_15012026_184052_cvsa.yaml'/>  
-
+   <!-- ICNIC (GMM) -->
     <!-- node -->
-    <node name="gmm_node" pkg="gmm_bci" type="gmm.py" output="screen"> 
-        <param name="path_gmm_model"   value="$(arg path_gmm_model)"/>
+    <node name="gmm_node" pkg="gmm_bci" type="gmm_dummy.py" output="screen"> 
     </node>
 
 

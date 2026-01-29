@@ -3,11 +3,11 @@
 
     <!-- RECORDER-->
     <!-- Protocol arguments -->
-    <arg name="subject"   default="i1"/>
+    <arg name="subject"   default="i2"/>
     <arg name="task"      default="mi_bhbf"/>
     <arg name="extra"     default=""/>
     <arg name="modality"         default='calibration'/>
-    <arg name="classes"          default='[769, 770]'/>
+    <arg name="classes"          default='[771, 773]'/>
     <!-- Recorder arguments -->
     <arg name="autostart" default='true'/>
     <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record_mi/$(arg subject)' />

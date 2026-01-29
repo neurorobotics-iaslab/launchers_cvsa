@@ -22,7 +22,7 @@
     <!-- RECORDER -->
     <!-- arguments recorder -->
         <arg name="autostart" default='true'/>
-        <arg name="subject"   default="i1"/> <!-- depends on the user  --> 
+        <arg name="subject"   default="i2"/> <!-- depends on the user  --> 
         <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record_mi/$(arg subject)' />
     <!-- arguments protocol -->
         <arg name="task"      default="mi_bhbf"/>
@@ -124,7 +124,7 @@
 
     <!-- ICNIC (GMM) -->
     <!-- arguments -->
-    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/gmm_i1_22012026_142400_mi.yaml'/>  
+    <arg name="path_gmm_model" default='$(find gmm_bci)/cfg/mi/gmm_i2_29012026_142030_mi.yaml'/>  
 
     <!-- node -->
     <node name="gmm_node" pkg="gmm_bci" type="gmm.py" output="screen"> 
@@ -134,7 +134,7 @@
 
     <!-- CLASSIFIER RAW (QDA)-->
     <!-- arguments -->
-    <arg name="path_qda_model" default='$(find qda_bci)/cfg/qda_i1_22012026_142400_mi.yaml'/>  
+    <arg name="path_qda_model" default='$(find qda_bci)/cfg/mi/qda_i2_29012026_142030_mi.yaml'/>  
 
     <!-- node -->
     <node name="qda_node" pkg="qda_bci" type="qda.py" output="screen"> 
@@ -144,11 +144,11 @@
 
     <!-- INTEGRATOR -->
     <!-- arguments -->
-    <arg name="classes"          default='[769, 770, 783]'/>
+    <arg name="classes"          default='[771, 773, 783]'/>
     <arg name="init_percentual"  default="[0.5,0.5]" />
-    <arg name="ic_threshold" default='0.1'/>
+    <arg name="ic_threshold" default='0.5'/>
     <arg name="ic_class_label" default='1'/> 
-    <arg name="k_gain" default='2.0'/> 
+    <arg name="k_gain" default='1.5'/> 
     <arg name="increment" default='1'/>  <!-- type of the integrator 1=soft, 0=hard-->
     <!-- buffer node -->
     <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
@@ -167,7 +167,7 @@
 
     <!-- FEEDBACK -->
     <!-- arguments -->
-    <arg name="thresholds"       default='[0.67, 0.74]'/> <!-- depends on the user -->
+    <arg name="thresholds"       default='[0.75, 0.8]'/> <!-- depends on the user -->
     <arg name="trials"           default='[10, 10, 5]'/>
     <!-- node -->
     <node name="trainingwheel" pkg="rosneuro_feedback_wheel" type="trainingwheel"  output="screen">
