@@ -3,7 +3,7 @@
 
     <!-- RECORDER-->
     <!-- Protocol arguments -->
-    <arg name="subject"   default="test"/>
+    <arg name="subject"   default="c7"/>
     <arg name="task"      default="cvsa_lbrb"/>
     <arg name="extra"     default=""/>
     <arg name="modality"         default='calibration'/>
@@ -27,7 +27,8 @@
     <!-- Acquisition arguments -->
     <arg name="plugin"     default='rosneuro::EGDDevice'/>
     <!-- <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/> -->
-    <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/> 
+    <!-- <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/>  -->
+    <arg name="devarg"     default='gtec'/>
     <arg name="framerate"  default='16'/>
     <arg name="samplerate" default='512'/>
 
