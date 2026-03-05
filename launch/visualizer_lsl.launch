@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- acquisition arguments -->
+    <!-- <arg name="plugin"     default='rosneuro::EGDDevice'/>  -->
+    <!-- <arg name="devarg"     default='/home/paolo/prova39ch.gdf'/> -->
+    <arg name="plugin"          default='rosneuro::LSLDevice'/> 
+    <arg name="framerate"       default='20'/>
+    <arg name="stream_type"     default='EEG'/>
+    <arg name="stream_name"     default='LiveAmpSN-054211-0242'/>
+    <arg name="samplerate"      default='500'/>    
+    
+   
+    <!-- acquisition node -->
+    <node name="acquisition" pkg="rosneuro_acquisition" type="acquisition" output="screen">
+            <param name="~plugin"          value="$(arg plugin)"/>
+            <param name="~stream_type"     value="$(arg stream_type)"/>
+            <param name="~stream_name"     value="$(arg stream_name)"/>
+            <param name="~samplerate"      value="$(arg samplerate)"/>
+            <param name="~framerate"       value="$(arg framerate)"/>
+      </node>
+      
+	<!-- visualizer node -->
+    <node name="visualizer" pkg="rosneuro_visualizer" type="neuroviz" >
+    </node>
+
+
+</launch>

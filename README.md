@@ -1,1 +1,1 @@
-Benvenuto! Il codice di questo progetto si trova nei branch 'simple_cvsa' e 'ic_cvsa'.
+Here there are the launcher files for a BCI based on the MI and VR
