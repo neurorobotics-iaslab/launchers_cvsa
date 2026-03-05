@@ -5,8 +5,8 @@
     <!-- arguments -->
         <arg name="plugin"     default='rosneuro::EGDDevice'/>
         <!-- <arg name="devarg"     default='eego|EEG_MASK|0xE1FFB760F731C675'/> -->
-        <!-- <arg name="devarg"     default='/home/paolo/prova16ch.gdf'/> -->
-        <arg name="devarg"     default='gtec'/>
+        <arg name="devarg"     default='/home/paolo/prova16ch.gdf'/>
+        <!-- <arg name="devarg"     default='gtec'/> -->
         <arg name="framerate"  default='16'/>
         <arg name="samplerate" default='512'/>
 
@@ -23,7 +23,7 @@
     <!-- arguments recorder -->
         <arg name="autostart" default='true'/>
         <arg name="subject"   default="i2"/> <!-- depends on the user  --> 
-        <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record_mi/$(arg subject)' />
+        <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/recordings/record_mi/$(arg subject)' />
     <!-- arguments protocol -->
         <arg name="task"      default="mi_bhbf"/>
         <arg name="extra"     default="buffer"/>

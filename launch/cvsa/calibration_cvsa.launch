@@ -9,7 +9,7 @@
     <arg name="modality"         default='calibration'/>
     <!-- Recorder arguments -->
     <arg name="autostart" default='true'/>
-    <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record/$(arg subject)' />
+    <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/recordings/record_cvsa/$(arg subject)' />
     <!-- Protocol parameters -->
     <rosparam param="/protocol/subject"     subst_value="True">$(arg subject)</rosparam>
     <rosparam param="/protocol/modality"    subst_value="True">$(arg modality)</rosparam>

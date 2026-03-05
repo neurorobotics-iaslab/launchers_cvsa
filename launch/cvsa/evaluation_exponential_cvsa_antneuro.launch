@@ -22,7 +22,7 @@
     <!-- arguments recorder -->
         <arg name="autostart" default='true'/>
         <arg name="subject"   default="c7"/> <!-- depends on the user -->
-        <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/record/$(arg subject)' />
+        <arg name="filepath"  default='/home/paolo/cvsa/ic_cvsa_ws/recordings/record_cvsa/$(arg subject)' />
     <!-- arguments protocol -->
         <arg name="task"      default="cvsa_lbrb"/>
         <arg name="extra"     default="exponential"/>
