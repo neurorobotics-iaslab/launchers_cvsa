@@ -45,10 +45,8 @@
         <param name="~samplerate"   value="$(arg samplerate)"/>
         <param name="~framerate"    value="$(arg framerate)"/>
 
-        <!-- 
         <param name="~stream_type"     value="$(arg stream_type)"/>
         <param name="~stream_name"     value="$(arg stream_name)"/>
-        -->
     </node>
 
 
@@ -86,5 +84,15 @@
     <include file="$(find ros_tcp_endpoint)/launch/endpoint.launch">
         <arg name="tcp_ip" value="0.0.0.0" /> <arg name="tcp_port" value="10000" />       
     </include>
+
+
+    <!-- QDA DECODER -->
+    <!-- arguments -->
+    <arg name="path_qda_model" default='/home/paolo/cvsa/ic_cvsa_ws/src/qda_bci/models/lda_mi_calibration.pkl'/>
+    <!-- node -->
+    <node pkg="qda_bci" type="qda.py" name="qda_decoder" output="screen">
+        <rosparam param="path_qda_model" subst_value="True">$(arg path_qda_model)</rosparam>
+        <rosparam param="paradigm" subst_value="True">$(arg paradigm)</rosparam>
+    </node>
 
 </launch>
