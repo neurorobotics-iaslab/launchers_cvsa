@@ -52,14 +52,6 @@
     </node>
 
 
-    <!-- ROSBAG -->
-    <!-- rosbag recording node -->
-    <!-- <node pkg="bag_bci" type="save_bag.py" name="save_bag" output="screen">
-        <rosparam param="filepath" subst_value="True">$(arg filepath)</rosparam>
-        <rosparam param="subject"  subst_value="True">$(arg subject)</rosparam>
-    </node> -->
-
-
     <!-- FEEDBACK-->
     <!-- arguments -->
     <arg name="thresholds"       default='[1.0, 1.0]'/> <!-- depends on the user -->
@@ -86,5 +78,14 @@
     <include file="$(find ros_tcp_endpoint)/launch/endpoint.launch">
         <arg name="tcp_ip" value="0.0.0.0" /> <arg name="tcp_port" value="10000" />       
     </include>
+
+
+    <!-- ROSBAG -->
+    <!-- rosbag recording node -->
+    <!-- <node pkg="bag_bci" type="save_bag.py" name="save_bag" output="screen">
+        <rosparam param="filepath" subst_value="True">$(arg filepath)</rosparam>
+        <rosparam param="subject"  subst_value="True">$(arg subject)</rosparam>
+        <rosparam param="paradigm"  subst_value="True">$(arg paradigm)</rosparam>
+    </node> -->
 
 </launch>

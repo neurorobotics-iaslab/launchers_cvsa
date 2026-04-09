@@ -1,0 +1,18 @@
+ArtifactCfg:
+  name: artifact
+  params: 
+    sampleRate: $(arg samplerate)
+    run_mode: $(arg run_mode)
+    signal_type: $(arg signal_type)
+    nchannels: $(arg nchannels)
+    chunkSize: $(arg chunkSize)
+    th_hEOG: 100
+    th_vEOG: 100
+    th_peaks: 140
+    EOG_ch: $(arg EOG_ch) 
+    freq_high_EOG: 1
+    freq_low_EOG: 10
+    freq_high_peaks: 1
+    filterOrder_EOG: 4
+    filterOrder_peaks: 4
+

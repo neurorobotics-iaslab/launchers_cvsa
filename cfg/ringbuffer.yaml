@@ -1,0 +1,5 @@
+RingBufferCfg:
+  name: ringbuffer
+  type: RingBufferFloat
+  params: 
+    size: $(arg samplerate) # 1 second of data

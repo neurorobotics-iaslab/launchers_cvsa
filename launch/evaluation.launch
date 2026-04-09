@@ -1,0 +1,145 @@
+<launch>
+
+    <!-- ACQUISITION-->
+    <!-- Acquisition arguments -->
+    <arg name="plugin"          default='rosneuro::LSLDevice'/> 
+    <arg name="framerate"       default='20'/>
+    <arg name="samplerate"      default='500'/> 
+    <arg name="stream_type"     default='EEG'/>
+    <arg name="stream_name"     default='LiveAmpSN-054211-0242'/>
+    <!-- node -->
+    <node name="acquisition" pkg="rosneuro_acquisition" type="acquisition" output="screen" launch-prefix="bash -c 'sleep 2; $0 $@' ">
+        <param name="~plugin"       value="$(arg plugin)"/>
+        <param name="~samplerate"   value="$(arg samplerate)"/>
+        <param name="~framerate"    value="$(arg framerate)"/>
+        <param name="~stream_type"     value="$(arg stream_type)"/>
+        <param name="~stream_name"     value="$(arg stream_name)"/>
+    </node>
+
+    <!-- PROCESSING -->
+    <!-- Processing arguments -->
+    <rosparam command="load" file="$(find launchers_bci)/cfg/ringbuffer.yaml" subst_value="true"/>
+    <arg name="EOG_ch" default='[12, 16]'/>
+    <rosparam command="load" file="$(find launchers_bci)/cfg/car.yaml" subst_value="true"/>
+    <arg name="nchannels" default='39'/>
+    <arg name="chunkSize" default="$(eval int(arg('samplerate') / arg('framerate')))"/>
+    <arg name="run_mode" default='online'/>
+    <arg name="signal_type" default='eeg'/> <!-- eeg or eeg_eog -->
+    <arg name="filter_order" default='4'/>
+    <arg name='filters_band' default='8.0 14.0; 18.0 24.0;'/>
+    <!-- node -->
+    <node name="processing_power_node" pkg="processing_bci" type="processing_power_node" output="screen"> 
+        <param name="nchannels"   value="$(arg nchannels)"/>
+        <param name="chunkSize"       value="$(arg chunkSize)"/>
+        <param name="samplerate"  value='$(arg samplerate)'/>
+        <param name="filter_order" value="$(arg filter_order)"/>
+        <param name="run_mode" value="$(arg run_mode)"/>
+        <param name="signal_type" value="$(arg signal_type)"/>
+        <param name="filters_band"           value="$(arg filters_band)"/>
+    </node>
+
+
+    <!-- ARTIFACTS -->
+    <!-- arguments -->
+    <rosparam command="load" file="$(find launchers_bci)/cfg/artifact.yaml"  subst_value="true"/>
+    <!-- node -->
+    <node name="artifactDetector_node" pkg="artifacts_bci" type="artifactDetector_node" output="screen"> 
+    </node>
+
+
+    <!-- FEEDBACK-->
+    <!-- arguments -->
+    <arg name="trials"           default='[4, 4]'/>
+    <arg name='paradigm'          default='mi'/> <!-- ...................................... paradigm ...................................... -->
+    <arg name="modality" default='evaluation'/>
+    <arg name="classes" value="$(eval '[769, 770]' if arg('paradigm') == 'mi' else 
+                         ('[750, 751]' if arg('paradigm') == 'hybrid' else 
+                         ('[730, 731]' if arg('paradigm') == 'cvsa' else 'error_paradigm')))" />
+    <!-- node -->
+    <node name="training_node" pkg="feedback_bci_vr" type="training_node"  output="screen">
+        <rosparam param="modality" subst_value="True">$(arg modality)</rosparam>
+        <rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
+        <rosparam param="trials" subst_value="True">$(arg trials)</rosparam>
+        <rosparam param="paradigm" subst_value="True">$(arg paradigm)</rosparam>
+    </node>
+
+
+    <!-- CLASSIFIERS -->
+    <!-- arguments -->
+    <arg name="path_qda_model_mi" default='$(find qda_bci)/cfg/mi/qda_test_mi.yaml'/> <!-- ......... QDA MI ......... -->
+    <arg name="path_qda_model_cvsa" default='$(find qda_bci)/cfg/cvsa/qda_test_cvsa.yaml'/> <!-- ......... QDA CVSA ......... -->
+    <!-- node mi -->
+    <node name="qda_node_mi" pkg="qda_bci" type="qda.py" output="screen" if="$(eval arg('paradigm') in ['mi', 'hybrid'])"> 
+        <param name="path_qda_model"   value="$(arg path_qda_model_mi)"/>
+        <param name="paradigm" value="mi"/>
+    </node>
+    <!-- node cvsa -->
+    <node name="qda_node_cvsa" pkg="qda_bci" type="qda.py" output="screen" if="$(eval arg('paradigm') in ['cvsa', 'hybrid'])"> 
+        <param name="path_qda_model"   value="$(arg path_qda_model_cvsa)"/>
+        <param name="paradigm" value="cvsa"/>
+    </node>
+
+
+    <!-- INTEGRATOR -->
+    <!-- arguments -->
+    <arg name="plugin_integrator" default='rosneuro::integrator::Buffer'/>
+    <arg name="bufferSize"  default="256" /> <!-- in samples, remember 16 hz and /2 since we start at 0.5 -->
+    <arg name="n_classes" value="$(eval len(eval(arg('classes'))))" />
+    <arg name="k_gain" default="1.0"/>
+    <arg name="thresholds"       default='[1.0, 1.0]'/> <!-- depends on the user -->
+    <!-- node -->
+    <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen" >
+        <param name="plugin"              value="$(arg plugin_integrator)"/>
+        <rosparam param="thresholds" subst_value="True">$(arg thresholds)</rosparam>
+        <rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
+        <param name="buffer_size"       value="$(arg bufferSize)"/>
+        <param name="paradigm" value="$(arg paradigm)"/>
+        <param name="k_gain" value="$(arg k_gain)"/>
+        <param name="n_classes" value="$(arg n_classes)"/>
+    </node>
+
+
+    <!-- VR SCENE MANAGER -->
+    <!-- node-->
+    <node pkg="feedback_bci_vr" type="scene_manager.py" name="scene_manager" output="screen">
+        <param name="paradigm" value="$(arg paradigm)" />
+    </node>
+
+
+    <!-- ROS-UNITY -->
+    <include file="$(find ros_tcp_endpoint)/launch/endpoint.launch">
+        <arg name="tcp_ip" value="0.0.0.0" /> <arg name="tcp_port" value="10000" />       
+    </include>
+
+
+    <!-- RECORDER-->
+    <!-- Protocol arguments -->
+    <arg name="subject"   default="test"/>   <!-- ...................................... subject ...................................... -->
+    <arg name="task" value="$(eval 'mi_lhrh' if arg('paradigm') == 'mi' else 
+                         ('hybrid_lr' if arg('paradigm') == 'hybrid' else 
+                         ('cvsa_blbr' if arg('paradigm') == 'cvsa' else 'error_paradigm')))" />
+    <arg name="extra"     default=""/>
+    <!-- Recorder arguments -->
+    <arg name="autostart" default='true'/>
+    <arg name="filepath"  default='/home/paolo/bci_vr_ws/recordings/$(arg subject)' />
+    <!-- Protocol parameters -->
+    <rosparam param="/protocol/subject"     subst_value="True">$(arg subject)</rosparam>
+    <rosparam param="/protocol/modality"    subst_value="True">$(arg modality)</rosparam>
+    <rosparam param="/protocol/task"        subst_value="True">$(arg task)</rosparam>
+    <rosparam param="/protocol/extra"       subst_value="True">$(arg extra)</rosparam>
+    <!-- node -->
+    <node name="recorder" pkg="rosneuro_recorder" type="recorder" >
+        <param name="~autostart" value="$(arg autostart)"/>
+        <param name="~filepath"  value="$(arg filepath)"/>
+    </node>
+
+
+    <!-- BAG -->
+    <!-- node -->
+    <node name="bag_node" pkg="bag_bci" type="save_bag" output="screen">
+        <param name="~subject" value="$(arg subject)"/>
+        <param name="~paradigm"  value="$(arg paradigm)"/>
+        <param name="~filepath"  value="$(arg filepath)"/>
+    </node>
+
+</launch>

@@ -16,7 +16,6 @@
     <rosparam param="/protocol/modality"    subst_value="True">$(arg modality)</rosparam>
     <rosparam param="/protocol/task"        subst_value="True">$(arg task)</rosparam>
     <rosparam param="/protocol/extra"       subst_value="True">$(arg extra)</rosparam>
-
     <!-- node -->
     <!-- <node name="recorder" pkg="rosneuro_recorder" type="recorder" >
         <param name="~autostart" value="$(arg autostart)"/>
@@ -45,24 +44,18 @@
         <param name="~samplerate"   value="$(arg samplerate)"/>
         <param name="~framerate"    value="$(arg framerate)"/>
 
+        <!-- 
         <param name="~stream_type"     value="$(arg stream_type)"/>
         <param name="~stream_name"     value="$(arg stream_name)"/>
+        -->
     </node>
-
-
-    <!-- ROSBAG -->
-    <!-- rosbag recording node -->
-    <!-- <node pkg="bag_bci" type="save_bag.py" name="save_bag" output="screen">
-        <rosparam param="filepath" subst_value="True">$(arg filepath)</rosparam>
-        <rosparam param="subject"  subst_value="True">$(arg subject)</rosparam>
-    </node> -->
 
 
     <!-- FEEDBACK-->
     <!-- arguments -->
     <arg name="thresholds"       default='[1.0, 1.0]'/> <!-- depends on the user -->
     <arg name="trials"           default='[10, 10]'/>
-    <arg name='paradigm'          default='mi'/>
+    <arg name='paradigm'          default='cvsa'/>
     <!-- node -->
     <node name="training_node" pkg="feedback_bci_vr" type="training_node"  output="screen">
         <rosparam param="modality" subst_value="True">$(arg modality)</rosparam>
@@ -86,13 +79,12 @@
     </include>
 
 
-    <!-- QDA DECODER -->
-    <!-- arguments -->
-    <arg name="path_qda_model" default='/home/paolo/cvsa/ic_cvsa_ws/src/qda_bci/models/lda_mi_calibration.pkl'/>
-    <!-- node -->
-    <node pkg="qda_bci" type="qda.py" name="qda_decoder" output="screen">
-        <rosparam param="path_qda_model" subst_value="True">$(arg path_qda_model)</rosparam>
-        <rosparam param="paradigm" subst_value="True">$(arg paradigm)</rosparam>
-    </node>
+    <!-- ROSBAG -->
+    <!-- rosbag recording node -->
+    <!-- <node pkg="bag_bci" type="save_bag.py" name="save_bag" output="screen">
+        <rosparam param="filepath" subst_value="True">$(arg filepath)</rosparam>
+        <rosparam param="subject"  subst_value="True">$(arg subject)</rosparam>
+        <rosparam param="paradigm"  subst_value="True">$(arg paradigm)</rosparam>
+    </node> -->
 
 </launch>
