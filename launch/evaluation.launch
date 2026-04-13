@@ -1,6 +1,6 @@
 <launch>
 
-    <!-- ACQUISITION-->
+    <!-- ACQUISITION -->
     <!-- Acquisition arguments -->
     <arg name="plugin"          default='rosneuro::LSLDevice'/> 
     <arg name="framerate"       default='20'/>
@@ -15,6 +15,7 @@
         <param name="~stream_type"     value="$(arg stream_type)"/>
         <param name="~stream_name"     value="$(arg stream_name)"/>
     </node>
+
 
     <!-- PROCESSING -->
     <!-- Processing arguments -->
@@ -142,4 +143,4 @@
         <param name="~filepath"  value="$(arg filepath)"/>
     </node>
 
-</launch>
+</launch>              
