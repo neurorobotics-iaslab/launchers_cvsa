@@ -28,6 +28,7 @@
     <arg name="signal_type" default='eeg'/> <!-- eeg or eeg_eog -->
     <arg name="filter_order" default='4'/>
     <arg name='filters_band' default='8.0 14.0; 18.0 24.0;'/>
+    <arg name="do_hann" default='true'/>
     <!-- node -->
     <node name="processing_power_node" pkg="processing_bci" type="processing_power_node" output="screen"> 
         <param name="nchannels"   value="$(arg nchannels)"/>
@@ -37,6 +38,7 @@
         <param name="run_mode" value="$(arg run_mode)"/>
         <param name="signal_type" value="$(arg signal_type)"/>
         <param name="filters_band"           value="$(arg filters_band)"/>
+        <param name="do_hann" value="$(arg do_hann)"/>
     </node>
 
 
