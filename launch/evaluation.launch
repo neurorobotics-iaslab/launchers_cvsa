@@ -20,9 +20,9 @@
     <!-- PROCESSING -->
     <!-- Processing arguments -->
     <rosparam command="load" file="$(find launchers_bci)/cfg/ringbuffer.yaml" subst_value="true"/>
-    <arg name="EOG_ch" default='[12, 16]'/>
+    <arg name="EOG_ch" default='[1, 32]'/>
     <rosparam command="load" file="$(find launchers_bci)/cfg/car.yaml" subst_value="true"/>
-    <arg name="nchannels" default='39'/>
+    <arg name="nchannels" default='32'/>
     <arg name="chunkSize" default="$(eval int(arg('samplerate') / arg('framerate')))"/>
     <arg name="run_mode" default='online'/>
     <arg name="signal_type" default='eeg'/> <!-- eeg or eeg_eog -->
@@ -52,8 +52,8 @@
 
     <!-- FEEDBACK-->
     <!-- arguments -->
-    <arg name="trials"           default='[4, 4]'/>
-    <arg name='paradigm'          default='mi'/> <!-- ...................................... paradigm ...................................... -->
+    <arg name="trials"           default='[5, 5]'/>
+    <arg name='paradigm'          default='hybrid'/> <!-- ...................................... paradigm ...................................... -->
     <arg name="modality" default='evaluation'/>
     <arg name="classes" value="$(eval '[769, 770]' if arg('paradigm') == 'mi' else 
                          ('[750, 751]' if arg('paradigm') == 'hybrid' else 
@@ -69,8 +69,8 @@
 
     <!-- CLASSIFIERS -->
     <!-- arguments -->
-    <arg name="path_qda_model_mi" default='$(find qda_bci)/cfg/mi/qda_test_mi.yaml'/> 
-    <arg name="path_qda_model_cvsa" default='$(find qda_bci)/cfg/cvsa/qda_test_cvsa.yaml'/> 
+    <arg name="path_qda_model_mi" default='$(find qda_bci)/cfg/mi_lhrh/qda.te.17042026_162857.mi_lhrh.yaml'/> 
+    <arg name="path_qda_model_cvsa" default='$(find qda_bci)/cfg/cvsa_blbr/qda.te.17042026_161122.cvsa_blbr.yaml'/> 
     <!-- node -->
     <node name="qda_node_mi" pkg="qda_bci" type="qda.py" output="screen" if="$(eval arg('paradigm') == 'hybrid' or arg('paradigm') == 'mi')"> 
         <param name="path_qda_model"   value="$(arg path_qda_model_mi)"/>
@@ -112,7 +112,9 @@
 
     <!-- ROS-UNITY -->
     <include file="$(find ros_tcp_endpoint)/launch/endpoint.launch">
-        <arg name="tcp_ip" value="0.0.0.0" /> <arg name="tcp_port" value="10000" />       
+        <!-- <arg name="tcp_ip" value="0.0.0.0" />  -->
+        <arg name="tcp_ip" value="10.9.2.20" />
+        <arg name="tcp_port" value="10000" />       
     </include>
 
 
@@ -140,7 +142,7 @@
 
     <!-- BAG -->
     <!-- node -->
-    <node name="bag_node" pkg="bag_bci" type="save_bag" output="screen">
+    <node name="bag_node" pkg="bag_bci" type="save_bag.py" output="screen">
         <param name="~subject" value="$(arg subject)"/>
         <param name="~paradigm"  value="$(arg paradigm)"/>
         <param name="~filepath"  value="$(arg filepath)"/>

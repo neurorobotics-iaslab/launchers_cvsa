@@ -2,16 +2,16 @@
 
 <!-- LSL streaming node -->
     <!-- arguments -->
-    <arg name="samplerate"      default='500'/> 
+    <!-- <arg name="samplerate"      default='500'/> 
     <arg name="stream_type"     default='EEG'/>
-    <arg name="stream_name"     default='LiveAmpSN-054211-0242'/>
+    <arg name="stream_name"     default='LiveAmpSN-054211-0242'/> -->
     <!-- node -->
-    <node pkg="test_pipeline" type="lsl_streaming.py" name="lsl_streaming" output="screen">
+    <!-- <node pkg="test_pipeline" type="lsl_streaming.py" name="lsl_streaming" output="screen">
         <param name="file_path" value="$(find test_pipeline)/data/input/prova39ch.gdf"/>
         <param name="stream_name" value="$(arg stream_name)"/>
         <param name="stream_type" value="$(arg stream_type)"/>
         <param name="sample_rate" value="$(arg samplerate)"/>
-    </node> 
+    </node>  -->
 
 
 
@@ -24,9 +24,9 @@
     <!-- Acquisition arguments -->
     <arg name="plugin"          default='rosneuro::LSLDevice'/> 
     <arg name="framerate"       default='20'/>
-    <!-- <arg name="samplerate"      default='500'/> 
+    <arg name="samplerate"      default='500'/> 
     <arg name="stream_type"     default='EEG'/>
-    <arg name="stream_name"     default='LiveAmpSN-054211-0242'/> -->
+    <arg name="stream_name"     default='LiveAmpSN-054211-0242'/>
     <!-- node -->
     <node name="acquisition" pkg="rosneuro_acquisition" type="acquisition" output="screen" launch-prefix="bash -c 'sleep 2; $0 $@' ">
         <param name="~plugin"       value="$(arg plugin)"/>
