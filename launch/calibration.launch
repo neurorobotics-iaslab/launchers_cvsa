@@ -24,9 +24,9 @@
     <!-- Acquisition arguments -->
     <arg name="plugin"          default='rosneuro::LSLDevice'/> 
     <arg name="framerate"       default='20'/>
-    <!-- <arg name="samplerate"      default='500'/>  -->
-    <!-- <arg name="stream_type"     default='EEG'/> -->
-    <!-- <arg name="stream_name"     default='LiveAmpSN-054211-0242'/> -->
+    <!-- <arg name="samplerate"      default='500'/> 
+    <arg name="stream_type"     default='EEG'/>
+    <arg name="stream_name"     default='LiveAmpSN-054211-0242'/> -->
     <!-- node -->
     <node name="acquisition" pkg="rosneuro_acquisition" type="acquisition" output="screen" launch-prefix="bash -c 'sleep 2; $0 $@' ">
         <param name="~plugin"       value="$(arg plugin)"/>
@@ -39,7 +39,7 @@
 
     <!-- FEEDBACK -->
     <!-- arguments -->
-    <arg name="trials"           default='[4, 4]'/>
+    <arg name="trials"           default='[5, 5]'/>
     <arg name='paradigm'          default='mi'/> <!-- ...................................... paradigm ...................................... -->
     <arg name="modality" default='calibration'/>
     <arg name="classes" value="$(eval '[769, 770]' if arg('paradigm') == 'mi' else 
@@ -63,7 +63,7 @@
 
     <!-- ROS-UNITY -->
     <include file="$(find ros_tcp_endpoint)/launch/endpoint.launch">
-        <!-- <arg name="tcp_ip" value="0.0.0.0" /> -->
+        <!-- <arg name="tcp_ip" value="0.0.0.0" />  -->
         <arg name="tcp_ip" value="10.9.2.20" />
         <arg name="tcp_port" value="10000" />       
     </include>
@@ -85,18 +85,18 @@
     <rosparam param="/protocol/task"        subst_value="True">$(arg task)</rosparam>
     <rosparam param="/protocol/extra"       subst_value="True">$(arg extra)</rosparam>
     <!-- node -->
-    <!-- <node name="recorder" pkg="rosneuro_recorder" type="recorder" >
+    <node name="recorder" pkg="rosneuro_recorder" type="recorder" >
         <param name="~autostart" value="$(arg autostart)"/>
         <param name="~filepath"  value="$(arg filepath)"/>
-    </node> -->
+    </node>
 
 
     <!-- BAG -->
     <!-- node -->
-    <!-- <node name="bag_node" pkg="bag_bci" type="save_bag" output="screen">
+    <node name="bag_node" pkg="bag_bci" type="save_bag.py" output="screen">
         <param name="~subject" value="$(arg subject)"/>
         <param name="~paradigm"  value="$(arg paradigm)"/>
         <param name="~filepath"  value="$(arg filepath)"/>
-    </node> -->
+    </node>
 
 </launch>
