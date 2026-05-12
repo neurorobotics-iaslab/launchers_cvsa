@@ -16,10 +16,6 @@
 
 
 
-
-
-
-
     <!-- ACQUISITION -->
     <!-- Acquisition arguments -->
     <arg name="plugin"          default='rosneuro::LSLDevice'/> 
@@ -39,8 +35,8 @@
 
     <!-- FEEDBACK -->
     <!-- arguments -->
-    <arg name="trials"           default='[5, 5]'/>
-    <arg name='paradigm'          default='mi'/> <!-- ...................................... paradigm ...................................... -->
+    <arg name="trials"           default='[10, 10]'/>
+    <arg name='paradigm'          default='cvsa'/> <!-- ...................................... paradigm ...................................... -->
     <arg name="modality" default='calibration'/>
     <arg name="classes" value="$(eval '[769, 770]' if arg('paradigm') == 'mi' else 
                          ('[750, 751]' if arg('paradigm') == 'hybrid' else 
@@ -71,14 +67,14 @@
 
     <!-- RECORDER -->
     <!-- Protocol arguments -->
-    <arg name="subject"   default="test"/>   <!-- ...................................... subject ...................................... -->
+    <arg name="subject"   default="a1"/>   <!-- ...................................... subject ...................................... -->
     <arg name="task" value="$(eval 'mi_lhrh' if arg('paradigm') == 'mi' else 
                          ('hybrid_lr' if arg('paradigm') == 'hybrid' else 
                          ('cvsa_blbr' if arg('paradigm') == 'cvsa' else 'error_paradigm')))" />
     <arg name="extra"     default=""/>
     <!-- Recorder arguments -->
     <arg name="autostart" default='true'/>
-    <arg name="filepath"  default='/home/paolo/bci_vr_ws/recordings/$(arg subject)' />
+    <arg name="filepath"  default='/home/paolo/bci_vr_ws/recordings/$(arg subject)/calibration' />
     <!-- Protocol parameters -->
     <rosparam param="/protocol/subject"     subst_value="True">$(arg subject)</rosparam>
     <rosparam param="/protocol/modality"    subst_value="True">$(arg modality)</rosparam>
