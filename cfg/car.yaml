@@ -1,5 +1,0 @@
-CarCfg:
-  name: car
-  type: CarFilterDouble
-  params:
-    EOG_ch: $(arg EOG_ch) # EOG channels for regression

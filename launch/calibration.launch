@@ -1,98 +1,96 @@
 <launch>
 
-<!-- LSL streaming node -->
-    <!-- arguments -->
-    <!-- <arg name="samplerate"      default='500'/> 
-    <arg name="stream_type"     default='EEG'/>
-    <arg name="stream_name"     default='LiveAmpSN-054211-0242'/> -->
-    <!-- node -->
-    <!-- <node pkg="test_pipeline" type="lsl_streaming.py" name="lsl_streaming" output="screen">
-        <param name="file_path" value="$(find test_pipeline)/data/input/prova39ch.gdf"/>
-        <param name="stream_name" value="$(arg stream_name)"/>
-        <param name="stream_type" value="$(arg stream_type)"/>
-        <param name="sample_rate" value="$(arg samplerate)"/>
-    </node>  -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- TOP-LEVEL CONFIGURATION                                            -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- Calibration records raw EEG + protocol events while the user performs
+         cued tasks. No processing / classification runs: feedback is generated
+         synthetically by Autopilot.cpp (LinearPilot for tasks, SinePilot for rest). -->
+
+    <arg name="paradigm" default="cvsa"/>      <!-- mi | cvsa | hybrid -->
+    <arg name="subject"  default="a1"/>
+    <arg name="extra"    default=""/>
+    <arg name="modality" default="calibration"/>
+    <arg name="trials"   default="[10, 10]"/>
+
+    <arg name="classes" value="$(eval '[769, 770]' if arg('paradigm') == 'mi' else
+                         ('[750, 751]' if arg('paradigm') == 'hybrid' else
+                         ('[730, 731]' if arg('paradigm') == 'cvsa' else 'error_paradigm')))"/>
+    <arg name="task" value="$(eval 'mi_lhrh' if arg('paradigm') == 'mi' else
+                       ('hybrid_lr' if arg('paradigm') == 'hybrid' else
+                       ('cvsa_blbr' if arg('paradigm') == 'cvsa' else 'error_paradigm')))"/>
+    <arg name="filepath" default="/home/paolo/bci_vr_ws/recordings/$(arg subject)/$(arg modality)"/>
+
+    <rosparam param="/protocol/subject"  subst_value="True">$(arg subject)</rosparam>
+    <rosparam param="/protocol/modality" subst_value="True">$(arg modality)</rosparam>
+    <rosparam param="/protocol/task"     subst_value="True">$(arg task)</rosparam>
+    <rosparam param="/protocol/extra"    subst_value="True">$(arg extra)</rosparam>
 
 
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- ACQUISITION  (LSL → /neurodata)                                    -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <arg name="samplerate"  default="500"/>
+    <arg name="framerate"   default="20"/>
+    <arg name="stream_name" default="LiveAmpSN-054211-0242"/>
+    <arg name="stream_type" default="EEG"/>
 
-
-    <!-- ACQUISITION -->
-    <!-- Acquisition arguments -->
-    <arg name="plugin"          default='rosneuro::LSLDevice'/> 
-    <arg name="framerate"       default='20'/>
-    <arg name="samplerate"      default='500'/> 
-    <arg name="stream_type"     default='EEG'/>
-    <arg name="stream_name"     default='LiveAmpSN-054211-0242'/>
-    <!-- node -->
-    <node name="acquisition" pkg="rosneuro_acquisition" type="acquisition" output="screen" launch-prefix="bash -c 'sleep 2; $0 $@' ">
-        <param name="~plugin"       value="$(arg plugin)"/>
-        <param name="~samplerate"   value="$(arg samplerate)"/>
-        <param name="~framerate"    value="$(arg framerate)"/>
-        <param name="~stream_type"     value="$(arg stream_type)"/>
-        <param name="~stream_name"     value="$(arg stream_name)"/>
+    <node name="acquisition" pkg="rosneuro_acquisition" type="acquisition" output="screen"
+          launch-prefix="bash -c 'sleep 2; $0 $@'">
+        <param name="~plugin"      value="rosneuro::LSLDevice"/>
+        <param name="~samplerate"  value="$(arg samplerate)"/>
+        <param name="~framerate"   value="$(arg framerate)"/>
+        <param name="~stream_type" value="$(arg stream_type)"/>
+        <param name="~stream_name" value="$(arg stream_name)"/>
     </node>
 
 
-    <!-- FEEDBACK -->
-    <!-- arguments -->
-    <arg name="trials"           default='[10, 10]'/>
-    <arg name='paradigm'          default='cvsa'/> <!-- ...................................... paradigm ...................................... -->
-    <arg name="modality" default='calibration'/>
-    <arg name="classes" value="$(eval '[769, 770]' if arg('paradigm') == 'mi' else 
-                         ('[750, 751]' if arg('paradigm') == 'hybrid' else 
-                         ('[730, 731]' if arg('paradigm') == 'cvsa' else 'error_paradigm')))" />
-    <!-- node -->
-    <node name="training_node" pkg="feedback_bci_vr" type="training_node"  output="screen">
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- FEEDBACK PROTOCOL  (training_node, calibration modality)           -->
+    <!-- Autopilot.cpp emits synthetic classifier outputs:                   -->
+    <!--   LinearPilot for active task classes, SinePilot for rest.          -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <node name="training_node" pkg="feedback_bci_vr" type="training_node" output="screen">
         <rosparam param="modality" subst_value="True">$(arg modality)</rosparam>
-        <rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
-        <rosparam param="trials" subst_value="True">$(arg trials)</rosparam>
+        <rosparam param="classes"  subst_value="True">$(arg classes)</rosparam>
+        <rosparam param="trials"   subst_value="True">$(arg trials)</rosparam>
         <rosparam param="paradigm" subst_value="True">$(arg paradigm)</rosparam>
     </node>
 
 
-    <!-- VR SCENE MANAGER -->
-    <!-- node-->
-    <node pkg="feedback_bci_vr" type="scene_manager.py" name="scene_manager" output="screen">
-        <param name="paradigm" value="$(arg paradigm)" />
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- VR (Unity scene + ROS-TCP bridge)                                  -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <node name="scene_manager" pkg="feedback_bci_vr" type="scene_manager.py" output="screen">
+        <param name="paradigm" value="$(arg paradigm)"/>
     </node>
 
-
-    <!-- ROS-UNITY -->
+    <arg name="tcp_ip"   default="10.9.2.20"/>
+    <arg name="tcp_port" default="10000"/>
     <include file="$(find ros_tcp_endpoint)/launch/endpoint.launch">
-        <!-- <arg name="tcp_ip" value="0.0.0.0" />  -->
-        <arg name="tcp_ip" value="10.9.2.20" />
-        <arg name="tcp_port" value="10000" />       
+        <arg name="tcp_ip"   value="$(arg tcp_ip)"/>
+        <arg name="tcp_port" value="$(arg tcp_port)"/>
     </include>
 
 
-    <!-- RECORDER -->
-    <!-- Protocol arguments -->
-    <arg name="subject"   default="a1"/>   <!-- ...................................... subject ...................................... -->
-    <arg name="task" value="$(eval 'mi_lhrh' if arg('paradigm') == 'mi' else 
-                         ('hybrid_lr' if arg('paradigm') == 'hybrid' else 
-                         ('cvsa_blbr' if arg('paradigm') == 'cvsa' else 'error_paradigm')))" />
-    <arg name="extra"     default=""/>
-    <!-- Recorder arguments -->
-    <arg name="autostart" default='true'/>
-    <arg name="filepath"  default='/home/paolo/bci_vr_ws/recordings/$(arg subject)/calibration' />
-    <!-- Protocol parameters -->
-    <rosparam param="/protocol/subject"     subst_value="True">$(arg subject)</rosparam>
-    <rosparam param="/protocol/modality"    subst_value="True">$(arg modality)</rosparam>
-    <rosparam param="/protocol/task"        subst_value="True">$(arg task)</rosparam>
-    <rosparam param="/protocol/extra"       subst_value="True">$(arg extra)</rosparam>
-    <!-- node -->
-    <node name="recorder" pkg="rosneuro_recorder" type="recorder" >
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- RECORDER  (GDF)                                                    -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <arg name="autostart" default="true"/>
+    <node name="recorder" pkg="rosneuro_recorder" type="recorder">
         <param name="~autostart" value="$(arg autostart)"/>
         <param name="~filepath"  value="$(arg filepath)"/>
     </node>
 
 
-    <!-- BAG -->
-    <!-- node -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- BAG RECORDER  (paradigm-aware ROS bag + param snapshot)            -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
     <node name="bag_node" pkg="bag_bci" type="save_bag.py" output="screen">
-        <param name="~subject" value="$(arg subject)"/>
-        <param name="~paradigm"  value="$(arg paradigm)"/>
-        <param name="~filepath"  value="$(arg filepath)"/>
+        <param name="~subject"  value="$(arg subject)"/>
+        <param name="~paradigm" value="$(arg paradigm)"/>
+        <param name="~modality" value="$(arg modality)"/>
+        <param name="~filepath" value="$(arg filepath)"/>
     </node>
 
 </launch>

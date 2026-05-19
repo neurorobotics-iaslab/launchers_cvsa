@@ -1,13 +1,24 @@
 <launch>
 
     <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- FULL EVALUATION TEST                                               -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- Replays a calibration GDF via LSL and runs the FULL evaluation     -->
+    <!-- pipeline end-to-end:                                                -->
+    <!--   processing → artifacts → sLDA → integrator → feedback → VR        -->
+    <!--   + GDF/bag recording + logger CSV outputs                          -->
+    <!-- Mirrors launchers_bci/evaluation.launch exactly — only the EEG      -->
+    <!-- source changes (lsl_streaming from GDF, instead of live amplifier). -->
+
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- TOP-LEVEL CONFIGURATION                                            -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="paradigm" default="cvsa"/>      <!-- mi | cvsa | hybrid -->
-    <arg name="subject"  default="c7"/>
+    <arg name="paradigm" default="mi"/>           <!-- mi | cvsa | hybrid -->
+    <arg name="subject"  default="test"/>
     <arg name="extra"    default=""/>
     <arg name="modality" default="evaluation"/>
-    <arg name="trials"   default="[10, 10]"/>
+    <arg name="trials"   default="[2, 2]"/>
 
     <arg name="classes" value="$(eval '[769, 770]' if arg('paradigm') == 'mi' else
                          ('[750, 751]' if arg('paradigm') == 'hybrid' else
@@ -15,9 +26,8 @@
     <arg name="task" value="$(eval 'mi_lhrh' if arg('paradigm') == 'mi' else
                        ('hybrid_lr' if arg('paradigm') == 'hybrid' else
                        ('cvsa_blbr' if arg('paradigm') == 'cvsa' else 'error_paradigm')))"/>
-    <arg name="filepath" default="/home/paolo/bci_vr_ws/recordings/$(arg subject)/$(arg modality)"/>
 
-    <!-- Protocol parameters read by the recorder + downstream nodes -->
+    <!-- Protocol parameters used by recorder + downstream nodes -->
     <rosparam param="/protocol/subject"  subst_value="True">$(arg subject)</rosparam>
     <rosparam param="/protocol/modality" subst_value="True">$(arg modality)</rosparam>
     <rosparam param="/protocol/task"     subst_value="True">$(arg task)</rosparam>
@@ -25,15 +35,56 @@
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- ACQUISITION  (LSL → /neurodata)                                    -->
+    <!-- DATA PATHS                                                         -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="samplerate"  default="500"/>
-    <arg name="framerate"   default="20"/>
-    <arg name="chunkSize"   default="$(eval int(arg('samplerate') / arg('framerate')))"/>
-    <arg name="nchannels"   default="32"/>
+    <arg name="data_dir" default="/home/paolo/bci_vr_ws/recordings"/>
+    <arg name="gdf_file" default="/home/paolo/bci_vr_ws/test_node_data/prova32ch.gdf"/>
+    <arg name="out_dir"  default="$(arg data_dir)/$(arg subject)"/>
+
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- SIGNAL PARAMETERS  (match evaluation.launch)                       -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <arg name="samplerate"   default="512"/>
+    <arg name="framerate"    default="20"/>
+    <arg name="chunkSize"    default="$(eval int(arg('samplerate') / arg('framerate')))"/>
+    <arg name="nchannels"    default="32"/>
+    <arg name="run_mode"     default="online"/>
+    <arg name="signal_type"  default="eeg"/>
+    <arg name="filter_order" default="4"/>
+    <arg name="do_ica"       default="false"/>
+    <arg name="do_car"       default="true"/>
+
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- MODEL PATHS                                                        -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <arg name="path_csp_mi"          default="$(find processing_bci)/cfg/csp/mi/csp_mi_test.yaml"/>
+    <arg name="path_csp_cvsa"        default="$(find processing_bci)/cfg/csp/cvsa/csp_cvsa_test.yaml"/>
+    <arg name="path_slda_model_mi"   default="$(find slda_bci)/models/mi/slda_mi_test.yaml"/>
+    <arg name="path_slda_model_cvsa" default="$(find slda_bci)/models/cvsa/slda_cvsa_test.yaml"/>
+
+    <!-- Paradigm-specific bands (match create_slda.ipynb output) -->
+    <arg name="filters_band_mi"   default="8.0 10.0; 10.0 12.0; 12.0 14.0; 8.0 14.0; 14.0 20.0;"/>
+    <arg name="filters_band_cvsa" default="8.0 10.0; 10.0 12.0; 12.0 14.0; 8.0 14.0; 14.0 20.0;"/>
+
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- LSL STREAMING  (GDF → LSL outlet, real-time paced)                 -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
     <arg name="stream_name" default="LiveAmpSN-054211-0242"/>
     <arg name="stream_type" default="EEG"/>
+    <node pkg="test_pipeline" type="lsl_streaming.py" name="lsl_streaming" output="screen">
+        <param name="file_path"   value="$(arg gdf_file)"/>
+        <param name="stream_name" value="$(arg stream_name)"/>
+        <param name="stream_type" value="$(arg stream_type)"/>
+        <param name="sample_rate" value="$(arg samplerate)"/>
+    </node>
 
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- ACQUISITION  (LSL → /neurodata, 2 s delay for LSL to settle)       -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
     <node name="acquisition" pkg="rosneuro_acquisition" type="acquisition" output="screen"
           launch-prefix="bash -c 'sleep 2; $0 $@'">
         <param name="~plugin"      value="rosneuro::LSLDevice"/>
@@ -45,31 +96,17 @@
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- SHARED PROCESSING CONFIGURATION                                    -->
+    <!-- SHARED PROCESSING CONFIG                                           -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="run_mode"     default="online"/>
-    <arg name="signal_type"  default="eeg"/>
-    <arg name="filter_order" default="4"/>
-    <arg name="do_ica"       default="false"/>
-    <arg name="do_car"       default="true"/>
-
-    <!-- CAR (single global config — only one CarCfg key, no namespace conflict). -->
     <rosparam command="load" file="$(find rosneuro_filters_car)/cfg/car.yaml" if="$(arg do_car)"/>
-
-    <!-- Processing ring buffer: 500 samples = 1 s @ 500 Hz. Loaded globally; both
-         processing nodes (MI / CVSA) read the same RingBufferCfg from there. -->
     <rosparam command="load" file="$(find processing_bci)/cfg/ringbuffer.yaml" subst_value="true"/>
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- PROCESSING — MI   (active for paradigm = mi | hybrid)              -->
+    <!-- PROCESSING — MI                                                    -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="path_csp_mi"     default="$(find processing_bci)/cfg/csp/mi/csp_mi_test.yaml"/>
-    <arg name="filters_band_mi" default="8.0 10.0; 10.0 12.0; 12.0 14.0; 8.0 14.0; 14.0 20.0; 20.0 28.0;"/>
-
     <node name="processing_fbcsp_mi" pkg="processing_bci" type="processing_fbcsp_node"
           output="screen" if="$(eval arg('paradigm') in ['mi', 'hybrid'])">
-        <!-- CspCfg loaded into this node's private namespace — keeps MI / CVSA CSPs independent. -->
         <rosparam command="load" file="$(arg path_csp_mi)"/>
         <param name="nchannels"    value="$(arg nchannels)"/>
         <param name="chunkSize"    value="$(arg chunkSize)"/>
@@ -85,11 +122,8 @@
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- PROCESSING — CVSA  (active for paradigm = cvsa | hybrid)           -->
+    <!-- PROCESSING — CVSA                                                  -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="path_csp_cvsa"     default="$(find processing_bci)/cfg/csp/cvsa/csp_cvsa_test.yaml"/>
-    <arg name="filters_band_cvsa" default="8.0 10.0; 10.0 12.0; 12.0 14.0; 8.0 14.0; 14.0 20.0;"/>
-
     <node name="processing_fbcsp_cvsa" pkg="processing_bci" type="processing_fbcsp_node"
           output="screen" if="$(eval arg('paradigm') in ['cvsa', 'hybrid'])">
         <rosparam command="load" file="$(arg path_csp_cvsa)"/>
@@ -109,20 +143,15 @@
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- ARTIFACT DETECTION                                                 -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- ArtifactCfg and RingBufferCfg must be on the GLOBAL param server:
-         ArtifactDetector uses NodeHandle("/") internally, not "~".
-         The artifact reuses the processing RingBufferCfg loaded above
-         (same key conflict prevents a per-node 250-sample buffer here). -->
     <rosparam command="load" file="$(find artifacts_bci)/cfg/artifact.yaml"/>
+    <arg name="art_bufsize" default="$(eval int(arg('samplerate') / 2))"/>
+    <rosparam command="load" file="$(find artifacts_bci)/cfg/ringbuffer.yaml" subst_value="true"/>
     <node name="artifactDetector_node" pkg="artifacts_bci" type="artifactDetector_node" output="screen"/>
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- CLASSIFIERS  (sLDA, paradigm-conditional)                          -->
+    <!-- CLASSIFIERS  (sLDA)                                                -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="path_slda_model_mi"   default="$(find slda_bci)/models/mi/slda_mi_test.yaml"/>
-    <arg name="path_slda_model_cvsa" default="$(find slda_bci)/models/cvsa/slda_cvsa_test.yaml"/>
-
     <node name="slda_node_mi" pkg="slda_bci" type="slda.py" output="screen"
           if="$(eval arg('paradigm') in ['mi', 'hybrid'])">
         <param name="path_slda_model" value="$(arg path_slda_model_mi)"/>
@@ -139,14 +168,15 @@
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- INTEGRATOR  (Bayesian fusion for hybrid; leaky-WTA buffer plugin)  -->
+    <!-- INTEGRATOR  (Bayesian fusion + leaky-WTA buffer)                   -->
+    <!-- Same defaults as evaluation.launch                                  -->
     <!-- ════════════════════════════════════════════════════════════════ -->
     <arg name="plugin_integrator" default="rosneuro::integrator::Buffer"/>
-    <arg name="bufferSize"        default="40"/>          <!-- samples; 40 / 20Hz = 2 s response -->
+    <arg name="bufferSize"        default="40"/>
     <arg name="n_classes"         value="$(eval len(eval(arg('classes'))))"/>
     <arg name="k_gain"            default="1.5"/>
     <arg name="init_val"          default="[0.5, 0.5]"/>
-    <arg name="thresholds"        default="[1.0, 0.8]"/>  <!-- per-class trigger thresholds — tune per subject -->
+    <arg name="thresholds"        default="[1.0, 0.8]"/>
 
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen">
         <param name="plugin"      value="$(arg plugin_integrator)"/>
@@ -178,7 +208,7 @@
         <param name="paradigm" value="$(arg paradigm)"/>
     </node>
 
-    <arg name="tcp_ip"   default="10.9.2.20"/>
+    <arg name="tcp_ip"   default="127.0.0.1"/>
     <arg name="tcp_port" default="10000"/>
     <include file="$(find ros_tcp_endpoint)/launch/endpoint.launch">
         <arg name="tcp_ip"   value="$(arg tcp_ip)"/>
@@ -187,9 +217,10 @@
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- RECORDER  (GDF)                                                    -->
+    <!-- RECORDER  (GDF — writes a fresh GDF of the replayed session)       -->
     <!-- ════════════════════════════════════════════════════════════════ -->
     <arg name="autostart" default="true"/>
+    <arg name="filepath"  default="$(arg out_dir)/recorded"/>
     <node name="recorder" pkg="rosneuro_recorder" type="recorder">
         <param name="~autostart" value="$(arg autostart)"/>
         <param name="~filepath"  value="$(arg filepath)"/>
