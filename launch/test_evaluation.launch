@@ -54,6 +54,7 @@
     <arg name="filter_order" default="4"/>
     <arg name="do_ica"       default="false"/>
     <arg name="do_car"       default="true"/>
+    <arg name="EOG_ch_names"  default='[Fp1, Fp2]'/>
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
@@ -65,9 +66,8 @@
     <arg name="path_slda_model_cvsa" default="$(find slda_bci)/models/cvsa/slda_cvsa_test.yaml"/>
 
     <!-- Paradigm-specific bands (match create_slda.ipynb output) -->
-    <arg name="filters_band_mi"   default="8.0 10.0; 10.0 12.0; 12.0 14.0; 8.0 14.0; 14.0 20.0;"/>
-    <arg name="filters_band_cvsa" default="8.0 10.0; 10.0 12.0; 12.0 14.0; 8.0 14.0; 14.0 20.0;"/>
-
+    <arg name="filters_band_mi"   default="8.0 12.0; 12.0 16.0; 16.0 20.0; 20.0 26.0;"/>
+    <arg name="filters_band_cvsa" default="8.0 12.0; 10.0 14.0; 12.0 16.0;"/>
 
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- LSL STREAMING  (GDF → LSL outlet, real-time paced)                 -->
@@ -98,7 +98,7 @@
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- SHARED PROCESSING CONFIG                                           -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <rosparam command="load" file="$(find rosneuro_filters_car)/cfg/car.yaml" if="$(arg do_car)"/>
+    <rosparam command="load" file="$(find rosneuro_filters_car)/cfg/car.yaml" subst_value="true" if="$(arg do_car)"/>
     <rosparam command="load" file="$(find processing_bci)/cfg/ringbuffer.yaml" subst_value="true"/>
 
 
