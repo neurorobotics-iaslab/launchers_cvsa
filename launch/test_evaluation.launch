@@ -45,7 +45,7 @@
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- SIGNAL PARAMETERS  (match evaluation.launch)                       -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="samplerate"   default="512"/>
+    <arg name="samplerate"   default="500"/>
     <arg name="framerate"    default="20"/>
     <arg name="chunkSize"    default="$(eval int(arg('samplerate') / arg('framerate')))"/>
     <arg name="nchannels"    default="32"/>
@@ -66,8 +66,8 @@
     <arg name="path_slda_model_cvsa" default="$(find slda_bci)/models/cvsa/slda_cvsa_test.yaml"/>
 
     <!-- Paradigm-specific bands (match create_slda.ipynb output) -->
-    <arg name="filters_band_mi"   default="8.0 12.0; 12.0 16.0; 16.0 20.0; 20.0 26.0;"/>
-    <arg name="filters_band_cvsa" default="8.0 12.0; 10.0 14.0; 12.0 16.0;"/>
+    <arg name="filters_band_mi"   default="8.0 12.0; 10.0 14.0; 12.0 16.0; 14.0 18.0; 16.0 22.0; 20.0 30.0;"/>
+    <arg name="filters_band_cvsa" default="7.0 11.0; 9.0 13.0; 11.0 15.0;"/>
 
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- LSL STREAMING  (GDF → LSL outlet, real-time paced)                 -->
@@ -117,7 +117,7 @@
         <param name="filters_band" value="$(arg filters_band_mi)"/>
         <param name="do_ica"       value="$(arg do_ica)"/>
         <param name="do_car"       value="$(arg do_car)"/>
-        <param name="topic_to_pub" value="/mi/eeg_fbcsp"/>
+        <param name="paradigm"     value="mi"/>
     </node>
 
 
@@ -136,7 +136,7 @@
         <param name="filters_band" value="$(arg filters_band_cvsa)"/>
         <param name="do_ica"       value="$(arg do_ica)"/>
         <param name="do_car"       value="$(arg do_car)"/>
-        <param name="topic_to_pub" value="/cvsa/eeg_fbcsp"/>
+        <param name="paradigm"     value="cvsa"/>
     </node>
 
 
