@@ -14,7 +14,7 @@
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- TOP-LEVEL CONFIGURATION                                            -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="paradigm" default="cvsa"/>           <!-- mi | cvsa | hybrid -->
+    <arg name="paradigm" default="hybrid"/>           <!-- mi | cvsa | hybrid -->
     <arg name="subject"  default="test"/>
     <arg name="extra"    default=""/>
     <arg name="modality" default="evaluation"/>
