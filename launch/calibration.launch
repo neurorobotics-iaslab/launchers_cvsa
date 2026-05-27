@@ -1,14 +1,10 @@
 <launch>
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- TOP-LEVEL CONFIGURATION                                            -->
+    <!-- TOP-LEVEL CONFIGURATION                                          -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- Calibration records raw EEG + protocol events while the user performs
-         cued tasks. No processing / classification runs: feedback is generated
-         synthetically by Autopilot.cpp (LinearPilot for tasks, SinePilot for rest). -->
-
     <arg name="paradigm" default="cvsa"/>      <!-- mi | cvsa | hybrid -->
-    <arg name="subject"  default="a1"/>
+    <arg name="subject"  default="c7"/>
     <arg name="extra"    default=""/>
     <arg name="modality" default="calibration"/>
     <arg name="trials"   default="[10, 10]"/>
@@ -19,6 +15,7 @@
     <arg name="task" value="$(eval 'mi_lhrh' if arg('paradigm') == 'mi' else
                        ('hybrid_lr' if arg('paradigm') == 'hybrid' else
                        ('cvsa_blbr' if arg('paradigm') == 'cvsa' else 'error_paradigm')))"/>
+
     <arg name="filepath" default="/home/paolo/bci_vr_ws/recordings/$(arg subject)/$(arg modality)"/>
 
     <rosparam param="/protocol/subject"  subst_value="True">$(arg subject)</rosparam>
@@ -28,7 +25,7 @@
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- ACQUISITION  (LSL → /neurodata)                                    -->
+    <!-- ACQUISITION                                                      -->
     <!-- ════════════════════════════════════════════════════════════════ -->
     <arg name="samplerate"  default="500"/>
     <arg name="framerate"   default="20"/>
@@ -46,9 +43,7 @@
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- FEEDBACK PROTOCOL  (training_node, calibration modality)           -->
-    <!-- Autopilot.cpp emits synthetic classifier outputs:                   -->
-    <!--   LinearPilot for active task classes, SinePilot for rest.          -->
+    <!-- FEEDBACK PROTOCOL                                                -->
     <!-- ════════════════════════════════════════════════════════════════ -->
     <node name="training_node" pkg="feedback_bci_vr" type="training_node" output="screen">
         <rosparam param="modality" subst_value="True">$(arg modality)</rosparam>
@@ -59,7 +54,7 @@
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- VR (Unity scene + ROS-TCP bridge)                                  -->
+    <!-- VR (Unity scene + ROS-TCP bridge)                                -->
     <!-- ════════════════════════════════════════════════════════════════ -->
     <node name="scene_manager" pkg="feedback_bci_vr" type="scene_manager.py" output="screen">
         <param name="paradigm" value="$(arg paradigm)"/>
@@ -74,7 +69,7 @@
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- RECORDER  (GDF)                                                    -->
+    <!-- RECORDER  (GDF)                                                  -->
     <!-- ════════════════════════════════════════════════════════════════ -->
     <arg name="autostart" default="true"/>
     <node name="recorder" pkg="rosneuro_recorder" type="recorder">
@@ -84,7 +79,7 @@
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- BAG RECORDER  (paradigm-aware ROS bag + param snapshot)            -->
+    <!-- BAG RECORDER                                                     -->
     <!-- ════════════════════════════════════════════════════════════════ -->
     <node name="bag_node" pkg="bag_bci" type="save_bag.py" output="screen">
         <param name="~subject"  value="$(arg subject)"/>

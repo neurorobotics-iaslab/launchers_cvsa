@@ -52,24 +52,20 @@
     <arg name="filter_order" default="4"/>
     <arg name="do_ica"       default="false"/>
     <arg name="do_car"       default="true"/>
+    <arg name="EOG_ch_names"  default='[Fp1, Fp2]'/>
 
-    <!-- CAR (single global config — only one CarCfg key, no namespace conflict). -->
-    <rosparam command="load" file="$(find rosneuro_filters_car)/cfg/car.yaml" if="$(arg do_car)"/>
-
-    <!-- Processing ring buffer: 500 samples = 1 s @ 500 Hz. Loaded globally; both
-         processing nodes (MI / CVSA) read the same RingBufferCfg from there. -->
+    <rosparam command="load" file="$(find rosneuro_filters_car)/cfg/car.yaml" subst_value="true" if="$(arg do_car)"/>
     <rosparam command="load" file="$(find processing_bci)/cfg/ringbuffer.yaml" subst_value="true"/>
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- PROCESSING — MI   (active for paradigm = mi | hybrid)              -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="path_csp_mi"     default="$(find processing_bci)/cfg/csp/mi/csp_mi_test.yaml"/>
-    <arg name="filters_band_mi" default="8.0 10.0; 10.0 12.0; 12.0 14.0; 8.0 14.0; 14.0 20.0; 20.0 28.0;"/>
+    <arg name="path_csp_mi"     default="$(find processing_bci)/cfg/csp/mi/csp_c7_27052026_163529.yaml"/>
+    <arg name="filters_band_mi" default="8.0 12.0; 10.0 14.0; 12.0 16.0; 14.0 18.0; 16.0 22.0; 20.0 30.0;"/>
 
     <node name="processing_fbcsp_mi" pkg="processing_bci" type="processing_fbcsp_node"
           output="screen" if="$(eval arg('paradigm') in ['mi', 'hybrid'])">
-        <!-- CspCfg loaded into this node's private namespace — keeps MI / CVSA CSPs independent. -->
         <rosparam command="load" file="$(arg path_csp_mi)"/>
         <param name="nchannels"    value="$(arg nchannels)"/>
         <param name="chunkSize"    value="$(arg chunkSize)"/>
@@ -80,15 +76,15 @@
         <param name="filters_band" value="$(arg filters_band_mi)"/>
         <param name="do_ica"       value="$(arg do_ica)"/>
         <param name="do_car"       value="$(arg do_car)"/>
-        <param name="topic_to_pub" value="/mi/eeg_fbcsp"/>
+        <param name="paradigm"     value="mi"/>
     </node>
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- PROCESSING — CVSA  (active for paradigm = cvsa | hybrid)           -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="path_csp_cvsa"     default="$(find processing_bci)/cfg/csp/cvsa/csp_cvsa_test.yaml"/>
-    <arg name="filters_band_cvsa" default="8.0 10.0; 10.0 12.0; 12.0 14.0; 8.0 14.0; 14.0 20.0;"/>
+    <arg name="path_csp_cvsa"     default="$(find processing_bci)/cfg/csp/cvsa/csp_c7_27052026_164544.yaml"/>
+    <arg name="filters_band_cvsa" default="7.0 11.0; 9.0 13.0; 11.0 15.0;"/>
 
     <node name="processing_fbcsp_cvsa" pkg="processing_bci" type="processing_fbcsp_node"
           output="screen" if="$(eval arg('paradigm') in ['cvsa', 'hybrid'])">
@@ -102,26 +98,24 @@
         <param name="filters_band" value="$(arg filters_band_cvsa)"/>
         <param name="do_ica"       value="$(arg do_ica)"/>
         <param name="do_car"       value="$(arg do_car)"/>
-        <param name="topic_to_pub" value="/cvsa/eeg_fbcsp"/>
+        <param name="paradigm"     value="cvsa"/>
     </node>
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- ARTIFACT DETECTION                                                 -->
+    <!-- ARTIFACT DETECTION                                               -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <!-- ArtifactCfg and RingBufferCfg must be on the GLOBAL param server:
-         ArtifactDetector uses NodeHandle("/") internally, not "~".
-         The artifact reuses the processing RingBufferCfg loaded above
-         (same key conflict prevents a per-node 250-sample buffer here). -->
     <rosparam command="load" file="$(find artifacts_bci)/cfg/artifact.yaml"/>
+    <arg name="art_bufsize" default="$(eval int(arg('samplerate') / 2))"/>
+    <rosparam command="load" file="$(find artifacts_bci)/cfg/ringbuffer.yaml" subst_value="true"/>
     <node name="artifactDetector_node" pkg="artifacts_bci" type="artifactDetector_node" output="screen"/>
 
 
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- CLASSIFIERS  (sLDA, paradigm-conditional)                          -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="path_slda_model_mi"   default="$(find slda_bci)/models/mi/slda_mi_test.yaml"/>
-    <arg name="path_slda_model_cvsa" default="$(find slda_bci)/models/cvsa/slda_cvsa_test.yaml"/>
+    <arg name="path_slda_model_mi"   default="$(find slda_bci)/models/mi/slda_c7_27052026_163529.yaml"/>
+    <arg name="path_slda_model_cvsa" default="$(find slda_bci)/models/cvsa/slda_c7_27052026_164544.yaml"/>
 
     <node name="slda_node_mi" pkg="slda_bci" type="slda.py" output="screen"
           if="$(eval arg('paradigm') in ['mi', 'hybrid'])">
@@ -142,11 +136,12 @@
     <!-- INTEGRATOR  (Bayesian fusion for hybrid; leaky-WTA buffer plugin)  -->
     <!-- ════════════════════════════════════════════════════════════════ -->
     <arg name="plugin_integrator" default="rosneuro::integrator::Buffer"/>
-    <arg name="bufferSize"        default="40"/>          <!-- samples; 40 / 20Hz = 2 s response -->
+    <arg name="bufferSize"        default="50"/>          <!-- samples; 40 / 20Hz = 2 s response -->
     <arg name="n_classes"         value="$(eval len(eval(arg('classes'))))"/>
-    <arg name="k_gain"            default="1.5"/>
+    <arg name="k_gain"            default="2.0"/>
     <arg name="init_val"          default="[0.5, 0.5]"/>
-    <arg name="thresholds"        default="[1.0, 0.8]"/>  <!-- per-class trigger thresholds — tune per subject -->
+    <arg name="thresholds"        default="[0.95, 0.75]"/>
+    <arg name="cvsa_influence"    default="4.0" />
 
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen">
         <param name="plugin"      value="$(arg plugin_integrator)"/>
@@ -157,6 +152,7 @@
         <param name="paradigm"    value="$(arg paradigm)"/>
         <param name="k_gain"      value="$(arg k_gain)"/>
         <param name="n_classes"   value="$(arg n_classes)"/>
+        <param name="cvsa_influence" value="$(arg cvsa_influence)"/>
     </node>
 
 
