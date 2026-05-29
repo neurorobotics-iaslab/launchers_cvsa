@@ -141,7 +141,8 @@
     <arg name="k_gain"            default="2.0"/>
     <arg name="init_val"          default="[0.5, 0.5]"/>
     <arg name="thresholds"        default="[0.95, 0.75]"/>
-    <arg name="cvsa_influence"    default="4.0" />
+    <arg name="cvsa_influence"    default="4.0"/>
+    <arg name="cvsa_hold"         default="1.0"/>
 
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen">
         <param name="plugin"      value="$(arg plugin_integrator)"/>
@@ -153,6 +154,7 @@
         <param name="k_gain"      value="$(arg k_gain)"/>
         <param name="n_classes"   value="$(arg n_classes)"/>
         <param name="cvsa_influence" value="$(arg cvsa_influence)"/>
+        <param name="cvsa_hold"      value="$(arg cvsa_hold)"/>
     </node>
 
 
@@ -160,10 +162,11 @@
     <!-- FEEDBACK PROTOCOL  (training_node, evaluation modality)            -->
     <!-- ════════════════════════════════════════════════════════════════ -->
     <node name="training_node" pkg="feedback_bci_vr" type="training_node" output="screen">
-        <rosparam param="modality" subst_value="True">$(arg modality)</rosparam>
-        <rosparam param="classes"  subst_value="True">$(arg classes)</rosparam>
-        <rosparam param="trials"   subst_value="True">$(arg trials)</rosparam>
-        <rosparam param="paradigm" subst_value="True">$(arg paradigm)</rosparam>
+        <rosparam param="modality"    subst_value="True">$(arg modality)</rosparam>
+        <rosparam param="classes"     subst_value="True">$(arg classes)</rosparam>
+        <rosparam param="trials"      subst_value="True">$(arg trials)</rosparam>
+        <rosparam param="paradigm"    subst_value="True">$(arg paradigm)</rosparam>
+        <rosparam param="thresholds"  subst_value="True">$(arg thresholds)</rosparam>
     </node>
 
 

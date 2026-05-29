@@ -176,12 +176,11 @@
     <arg name="n_classes"         value="$(eval len(eval(arg('classes'))))"/>
     <arg name="k_gain"            default="0.5"/>
     <arg name="init_val"          default="[0.5, 0.5]"/>
-    <arg name="thresholds"        default="[1.0, 0.8]"/>
+    <arg name="thresholds"        default="[0.8, 0.8]"/>
     <arg name="cvsa_influence"    default="5.0" />
 
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen">
         <param name="plugin"      value="$(arg plugin_integrator)"/>
-        <rosparam param="thresholds" subst_value="True">$(arg thresholds)</rosparam>
         <rosparam param="init_val"   subst_value="True">$(arg init_val)</rosparam>
         <rosparam param="classes"    subst_value="True">$(arg classes)</rosparam>
         <param name="buffer_size" value="$(arg bufferSize)"/>
@@ -197,6 +196,7 @@
     <!-- ════════════════════════════════════════════════════════════════ -->
     <node name="training_node" pkg="feedback_bci_vr" type="training_node" output="screen">
         <rosparam param="modality" subst_value="True">$(arg modality)</rosparam>
+        <rosparam param="thresholds" subst_value="True">$(arg thresholds)</rosparam>
         <rosparam param="classes"  subst_value="True">$(arg classes)</rosparam>
         <rosparam param="trials"   subst_value="True">$(arg trials)</rosparam>
         <rosparam param="paradigm" subst_value="True">$(arg paradigm)</rosparam>
