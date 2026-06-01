@@ -176,7 +176,7 @@
     <arg name="n_classes"         value="$(eval len(eval(arg('classes'))))"/>
     <arg name="k_gain"            default="0.5"/>
     <arg name="init_val"          default="[0.5, 0.5]"/>
-    <arg name="thresholds"        default="[0.8, 0.8]"/>
+    <arg name="thresholds"        default="[0.95, 0.60]"/>
     <arg name="cvsa_influence"    default="5.0" />
 
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen">
