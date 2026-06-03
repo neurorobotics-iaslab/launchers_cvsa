@@ -61,7 +61,7 @@
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- PROCESSING — MI   (active for paradigm = mi | hybrid)              -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="path_csp_mi"     default="$(find processing_bci)/cfg/csp/mi/csp_c7_27052026_163529.yaml"/>
+    <arg name="path_csp_mi"     default="$(find processing_bci)/cfg/csp/mi/csp_c7_03062026_171802.yaml"/>
     <arg name="filters_band_mi" default="8.0 12.0; 10.0 14.0; 12.0 16.0; 14.0 18.0; 16.0 22.0; 20.0 30.0;"/>
 
     <node name="processing_fbcsp_mi" pkg="processing_bci" type="processing_fbcsp_node"
@@ -83,7 +83,7 @@
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- PROCESSING — CVSA  (active for paradigm = cvsa | hybrid)           -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="path_csp_cvsa"     default="$(find processing_bci)/cfg/csp/cvsa/csp_c7_27052026_164544.yaml"/>
+    <arg name="path_csp_cvsa"     default="$(find processing_bci)/cfg/csp/cvsa/csp_c7_03062026_170726.yaml"/>
     <arg name="filters_band_cvsa" default="7.0 11.0; 9.0 13.0; 11.0 15.0;"/>
 
     <node name="processing_fbcsp_cvsa" pkg="processing_bci" type="processing_fbcsp_node"
@@ -114,8 +114,8 @@
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- CLASSIFIERS  (sLDA, paradigm-conditional)                          -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="path_slda_model_mi"   default="$(find slda_bci)/models/mi/slda_c7_27052026_163529.yaml"/>
-    <arg name="path_slda_model_cvsa" default="$(find slda_bci)/models/cvsa/slda_c7_27052026_164544.yaml"/>
+    <arg name="path_slda_model_mi"   default="$(find slda_bci)/models/mi/slda_c7_03062026_171802.yaml"/>
+    <arg name="path_slda_model_cvsa" default="$(find slda_bci)/models/cvsa/slda_c7_03062026_170726.yaml"/>
 
     <node name="slda_node_mi" pkg="slda_bci" type="slda.py" output="screen"
           if="$(eval arg('paradigm') in ['mi', 'hybrid'])">
@@ -136,25 +136,24 @@
     <!-- INTEGRATOR  (Bayesian fusion for hybrid; leaky-WTA buffer plugin)  -->
     <!-- ════════════════════════════════════════════════════════════════ -->
     <arg name="plugin_integrator" default="rosneuro::integrator::Buffer"/>
-    <arg name="bufferSize"        default="50"/>          <!-- samples; 40 / 20Hz = 2 s response -->
+    <arg name="bufferSize"        default="80"/>         <!-- frames; 100/20Hz = 5 s at max step -->
     <arg name="n_classes"         value="$(eval len(eval(arg('classes'))))"/>
-    <arg name="k_gain"            default="2.0"/>
+    <arg name="k_gain"            default="1"/>         <!-- SOFT: conservative for first sessions -->
+    <arg name="increment"         default="1"/>           <!-- 0=HARD  1=SOFT (velocity-scaled step) -->
     <arg name="init_val"          default="[0.5, 0.5]"/>
-    <arg name="thresholds"        default="[0.95, 0.75]"/>
-    <arg name="cvsa_influence"    default="4.0"/>
-    <arg name="cvsa_hold"         default="1.0"/>
+    <arg name="thresholds"        default="[0.80, 0.75]"/>
+    <arg name="cvsa_influence"    default="2.0"/>         <!-- total cosine decay: α=0.5 at 1.5 s -->
 
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen">
-        <param name="plugin"      value="$(arg plugin_integrator)"/>
-        <rosparam param="thresholds" subst_value="True">$(arg thresholds)</rosparam>
+        <param name="plugin"         value="$(arg plugin_integrator)"/>
         <rosparam param="init_val"   subst_value="True">$(arg init_val)</rosparam>
         <rosparam param="classes"    subst_value="True">$(arg classes)</rosparam>
-        <param name="buffer_size" value="$(arg bufferSize)"/>
-        <param name="paradigm"    value="$(arg paradigm)"/>
-        <param name="k_gain"      value="$(arg k_gain)"/>
-        <param name="n_classes"   value="$(arg n_classes)"/>
+        <param name="buffer_size"    value="$(arg bufferSize)"/>
+        <param name="paradigm"       value="$(arg paradigm)"/>
+        <param name="k_gain"         value="$(arg k_gain)"/>
+        <param name="increment"      value="$(arg increment)"/>
+        <param name="n_classes"      value="$(arg n_classes)"/>
         <param name="cvsa_influence" value="$(arg cvsa_influence)"/>
-        <param name="cvsa_hold"      value="$(arg cvsa_hold)"/>
     </node>
 
 

@@ -3,7 +3,7 @@
     <!-- ════════════════════════════════════════════════════════════════ -->
     <!-- TOP-LEVEL CONFIGURATION                                          -->
     <!-- ════════════════════════════════════════════════════════════════ -->
-    <arg name="paradigm" default="cvsa"/>      <!-- mi | cvsa | hybrid -->
+    <arg name="paradigm" default="mi"/>      <!-- mi | cvsa | hybrid -->
     <arg name="subject"  default="c7"/>
     <arg name="extra"    default=""/>
     <arg name="modality" default="calibration"/>

@@ -172,21 +172,23 @@
     <!-- Same defaults as evaluation.launch                                  -->
     <!-- ════════════════════════════════════════════════════════════════ -->
     <arg name="plugin_integrator" default="rosneuro::integrator::Buffer"/>
-    <arg name="bufferSize"        default="100"/>
+    <arg name="bufferSize"        default="40"/>         <!-- frames; 100/20Hz = 5 s at max step -->
     <arg name="n_classes"         value="$(eval len(eval(arg('classes'))))"/>
-    <arg name="k_gain"            default="0.5"/>
+    <arg name="k_gain"            default="1"/>         <!-- SOFT: conservative for first sessions -->
+    <arg name="increment"         default="1"/>           <!-- 0=HARD  1=SOFT (velocity-scaled step) -->
     <arg name="init_val"          default="[0.5, 0.5]"/>
-    <arg name="thresholds"        default="[0.95, 0.60]"/>
-    <arg name="cvsa_influence"    default="5.0" />
+    <arg name="thresholds"        default="[0.80, 0.80]"/>
+    <arg name="cvsa_influence"    default="4.0"/>         <!-- total cosine decay: α=0.5 at 1.5 s -->
 
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen">
-        <param name="plugin"      value="$(arg plugin_integrator)"/>
+        <param name="plugin"         value="$(arg plugin_integrator)"/>
         <rosparam param="init_val"   subst_value="True">$(arg init_val)</rosparam>
         <rosparam param="classes"    subst_value="True">$(arg classes)</rosparam>
-        <param name="buffer_size" value="$(arg bufferSize)"/>
-        <param name="paradigm"    value="$(arg paradigm)"/>
-        <param name="k_gain"      value="$(arg k_gain)"/>
-        <param name="n_classes"   value="$(arg n_classes)"/>
+        <param name="buffer_size"    value="$(arg bufferSize)"/>
+        <param name="paradigm"       value="$(arg paradigm)"/>
+        <param name="k_gain"         value="$(arg k_gain)"/>
+        <param name="increment"      value="$(arg increment)"/>
+        <param name="n_classes"      value="$(arg n_classes)"/>
         <param name="cvsa_influence" value="$(arg cvsa_influence)"/>
     </node>
 
