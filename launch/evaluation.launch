@@ -142,7 +142,7 @@
     <arg name="increment"         default="1"/>           <!-- 0=HARD  1=SOFT (velocity-scaled step) -->
     <arg name="init_val"          default="[0.5, 0.5]"/>
     <arg name="thresholds"        default="[0.80, 0.75]"/>
-    <arg name="cvsa_influence"    default="2.0"/>         <!-- total cosine decay: α=0.5 at 1.5 s -->
+    <arg name="cvsa_influence"    default="2.5"/>         <!-- total cosine decay: α=0.5 at 1.5 s -->
 
     <node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen">
         <param name="plugin"         value="$(arg plugin_integrator)"/>
