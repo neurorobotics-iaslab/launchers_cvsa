@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>launchers_bci</name>
+  <version>0.0.1</version>
+  <description>General launch files for the ros2neuro BCI pipeline (acquisition, recording, game control).</description>
+  <maintainer email="forin.paolo98@gmail.com">Paolo</maintainer>
+  <license>Apache-2.0</license>
+
+  <exec_depend>ros2launch</exec_depend>
+  <exec_depend>launch_xml</exec_depend>
+  <exec_depend>ros2neuro_acquisition</exec_depend>
+  <exec_depend>ros2neuro_acquisition_lsl</exec_depend>
+  <exec_depend>ros2neuro_recorder</exec_depend>
+  <exec_depend>ros2neuro_recorder_xdf</exec_depend>
+  <exec_depend>game_controller</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
