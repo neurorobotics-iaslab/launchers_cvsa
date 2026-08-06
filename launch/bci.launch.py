@@ -29,6 +29,13 @@ THRESHOLD_DEFAULTS = {
     "threshold_4": "0.7",
 }
 
+CONTROLLER_EXTRA_DEFAULTS = {
+    "command_period_sec": "0.5",
+    "with_reset": "false",
+    "reset_service_name": "/integrator/reset",
+    "control_topic": "/game_controller/control",
+}
+
 
 def generate_launch_description() -> LaunchDescription:
     lsl_default_config = get_package_share_directory("ros2neuro_acquisition_lsl") + "/config/lsl_configuration.yaml"
@@ -49,6 +56,10 @@ def generate_launch_description() -> LaunchDescription:
         *(
             DeclareLaunchArgument(name, default_value=default, description=f"{name} for the threshold controller")
             for name, default in THRESHOLD_DEFAULTS.items()
+        ),
+        *(
+            DeclareLaunchArgument(name, default_value=default, description=f"{name} for the threshold controller")
+            for name, default in CONTROLLER_EXTRA_DEFAULTS.items()
         ),
     ]
 
@@ -77,7 +88,22 @@ def generate_launch_description() -> LaunchDescription:
         AnyLaunchDescriptionSource(
             PathJoinSubstitution([FindPackageShare("game_controller"), "launch", "two_class_threshold.launch.py"])
         ),
-        launch_arguments={name: LaunchConfiguration(name) for name in THRESHOLD_DEFAULTS}.items(),
+        launch_arguments={
+            name: LaunchConfiguration(name) for name in {**THRESHOLD_DEFAULTS, **CONTROLLER_EXTRA_DEFAULTS}
+        }.items(),
     )
 
-    return LaunchDescription([*launch_args, acquisition_launch, recorder_launch, controller_launch])
+    wheel_launch = IncludeLaunchDescription(
+        AnyLaunchDescriptionSource(
+            PathJoinSubstitution([FindPackageShare("ros2neuro_feedback_wheel"), "launch", "wheel.launch.xml"])
+        ),
+        launch_arguments={
+            **{name: LaunchConfiguration(name) for name in THRESHOLD_DEFAULTS},
+            "mode": "control",
+            "input_topic": LaunchConfiguration("control_topic"),
+        }.items(),
+    )
+
+    return LaunchDescription(
+        [*launch_args, acquisition_launch, recorder_launch, controller_launch, wheel_launch]
+    )

@@ -9,7 +9,16 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", [f"resource/{package_name}"]),
         (f"share/{package_name}", ["package.xml"]),
-        (f"share/{package_name}/launch", ["launch/bci.launch.py"]),
+        (
+            f"share/{package_name}/launch",
+            [
+                "launch/bci.launch.py",
+                "launch/mi_pipeline.launch.xml",
+                "launch/calibration.launch.py",
+                "launch/evaluation.launch.py",
+                "launch/control.launch.py",
+            ],
+        ),
     ],
     install_requires=["setuptools"],
     zip_safe=True,

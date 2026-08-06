@@ -11,9 +11,18 @@
   <exec_depend>launch_xml</exec_depend>
   <exec_depend>ros2neuro_acquisition</exec_depend>
   <exec_depend>ros2neuro_acquisition_lsl</exec_depend>
+  <exec_depend>ros2neuro_acquisition_xdf</exec_depend>
   <exec_depend>ros2neuro_recorder</exec_depend>
   <exec_depend>ros2neuro_recorder_xdf</exec_depend>
+  <exec_depend>ros2neuro_filters</exec_depend>
+  <exec_depend>ros2neuro_filters_butterworth</exec_depend>
+  <exec_depend>ros2neuro_processing_buffer</exec_depend>
+  <exec_depend>ros2neuro_decoder_py</exec_depend>
+  <exec_depend>ros2neuro_integrator</exec_depend>
+  <exec_depend>ros2neuro_integrator_buffer</exec_depend>
   <exec_depend>game_controller</exec_depend>
+  <exec_depend>ros2neuro_feedback_wheel</exec_depend>
+  <exec_depend>game_bridge</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>
