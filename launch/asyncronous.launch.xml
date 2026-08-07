@@ -1,0 +1,68 @@
+<launch>
+    <!-- Classification pipeline replayed from a GDF file instead of live
+         hardware: acquisition(gdf) -> filters -> buffer -> decoder -> integrator.
+         Ends by publishing /integrated/raw (two per-class values, see
+         game_controller/README.md). Modeled on
+         ros2neuro_decoder_py/launch/example_decoder.launch.xml.
+
+         Included by control.launch.py (the asynchronous/continuous game
+         control path), not meant to be launched on its own. See
+         evaluation_pipeline.launch.xml (same chain, for evaluation) and
+         calibration_pipeline.launch.xml (no classifier needed) for the
+         other two variants.
+    -->
+    <arg name="gdf_file" default="/home/paolo/Cortical_Peaks_Challenge_2026/recordings/test_mi.gdf"/>
+    <arg name="decoder_model_path" default="$(find-pkg-share ros2neuro_decoder_py)/extra/eegnet_mi_bhbf"/>
+    <arg name="samplerate" default="512"/>
+    <arg name="framerate" default="16.0"/>
+    <arg name="loop" default="true"/>
+
+    <node pkg="ros2neuro_acquisition" exec="acquisition" name="acquisition" output="screen">
+        <param name="acquisition.plugin" value="ros2neuro::acquisition::XDFDevice"/>
+        <param name="acquisition.filename" value="$(var gdf_file)"/>
+        <param name="acquisition.framerate" value="$(var framerate)"/>
+        <param name="acquisition.loop" value="$(var loop)"/>
+        <param name="acquisition.autostart" value="true"/>
+        <param name="acquisition.reopen" value="true"/>
+    </node>
+
+    <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters" output="screen">
+        <param name="filters.chain" value="[hp, lp]"/>
+        <param name="filters.hp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
+        <param name="filters.hp.order" value="2"/>
+        <param name="filters.hp.samplerate" value="$(var samplerate)"/>
+        <param name="filters.hp.cutoff" value="4.0"/>
+        <param name="filters.hp.type" value="highpass"/>
+        <param name="filters.lp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
+        <param name="filters.lp.order" value="2"/>
+        <param name="filters.lp.samplerate" value="$(var samplerate)"/>
+        <param name="filters.lp.cutoff" value="14.0"/>
+        <param name="filters.lp.type" value="lowpass"/>
+        <remap from="/neurodata" to="/acquisition/neurodata"/>
+        <remap from="~/filtered" to="/processing/filtered"/>
+    </node>
+
+    <node pkg="ros2neuro_processing_buffer" exec="buffer_node" name="buffer" output="screen">
+        <param name="sensor_name" value="EEG"/>
+        <param name="buffer_samples" value="512"/>
+        <remap from="/neurodata_filtered" to="/processing/filtered"/>
+        <remap from="/features" to="/processing/buffered_features"/>
+    </node>
+
+    <node pkg="ros2neuro_decoder_py" exec="decoder_node" name="decoder" output="screen">
+        <param name="decoder.type" value="braindecode"/>
+        <param name="decoder.model_path" value="$(var decoder_model_path)"/>
+        <param name="decoder.name" value="eegnet_bhbf"/>
+        <remap from="/features" to="/processing/buffered_features"/>
+        <remap from="~/prediction" to="/classification/prediction"/>
+    </node>
+
+    <node pkg="ros2neuro_integrator" exec="integrator_node" name="integrator" output="screen">
+        <param name="input_topic" value="/classification/prediction"/>
+        <param name="output_topic" value="/integrated/raw"/>
+        <param name="integrator.name" value="mi_buffer_integrator"/>
+        <param name="integrator.type" value="ros2neuro::integrator::Buffer"/>
+        <param name="integrator.params.buffer_size" value="256"/>
+        <param name="integrator.params.increment" value="1"/>
+    </node>
+</launch>

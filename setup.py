@@ -13,7 +13,9 @@ setup(
             f"share/{package_name}/launch",
             [
                 "launch/bci.launch.py",
-                "launch/mi_pipeline.launch.xml",
+                "launch/calibration_pipeline.launch.xml",
+                "launch/evaluation_pipeline.launch.xml",
+                "launch/asyncronous.launch.xml",
                 "launch/calibration.launch.py",
                 "launch/evaluation.launch.py",
                 "launch/control.launch.py",

@@ -1,0 +1,48 @@
+<launch>
+    <!-- Calibration-only pipeline replayed from a GDF file: acquisition(gdf)
+         -> filters -> buffer. No decoder/integrator here; calibration
+         doesn't need a classifier: training_controller drives the feedback
+         itself via Autopilot and never subscribes to /integrated/raw in
+         that modality (see game_controller/README.md).
+
+         Included by calibration.launch.py, not meant to be launched on its
+         own. See evaluation_pipeline.launch.xml and asyncronous.launch.xml
+         for the two variants that do run the classifier.
+    -->
+    <arg name="gdf_file" default="/home/paolo/Cortical_Peaks_Challenge_2026/recordings/test_mi.gdf"/>
+    <arg name="samplerate" default="512"/>
+    <arg name="framerate" default="16.0"/>
+    <arg name="loop" default="true"/>
+
+    <node pkg="ros2neuro_acquisition" exec="acquisition" name="acquisition" output="screen">
+        <param name="acquisition.plugin" value="ros2neuro::acquisition::XDFDevice"/>
+        <param name="acquisition.filename" value="$(var gdf_file)"/>
+        <param name="acquisition.framerate" value="$(var framerate)"/>
+        <param name="acquisition.loop" value="$(var loop)"/>
+        <param name="acquisition.autostart" value="true"/>
+        <param name="acquisition.reopen" value="true"/>
+    </node>
+
+    <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters" output="screen">
+        <param name="filters.chain" value="[hp, lp]"/>
+        <param name="filters.hp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
+        <param name="filters.hp.order" value="2"/>
+        <param name="filters.hp.samplerate" value="$(var samplerate)"/>
+        <param name="filters.hp.cutoff" value="4.0"/>
+        <param name="filters.hp.type" value="highpass"/>
+        <param name="filters.lp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
+        <param name="filters.lp.order" value="2"/>
+        <param name="filters.lp.samplerate" value="$(var samplerate)"/>
+        <param name="filters.lp.cutoff" value="14.0"/>
+        <param name="filters.lp.type" value="lowpass"/>
+        <remap from="/neurodata" to="/acquisition/neurodata"/>
+        <remap from="~/filtered" to="/processing/filtered"/>
+    </node>
+
+    <node pkg="ros2neuro_processing_buffer" exec="buffer_node" name="buffer" output="screen">
+        <param name="sensor_name" value="EEG"/>
+        <param name="buffer_samples" value="512"/>
+        <remap from="/neurodata_filtered" to="/processing/filtered"/>
+        <remap from="/features" to="/processing/buffered_features"/>
+    </node>
+</launch>

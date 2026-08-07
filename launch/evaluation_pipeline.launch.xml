@@ -5,10 +5,12 @@
          game_controller/README.md). Modeled on
          ros2neuro_decoder_py/launch/example_decoder.launch.xml.
 
-         Included by calibration.launch.py / evaluation.launch.py / control.launch.py,
-         not meant to be launched on its own.
+         Included by evaluation.launch.py, not meant to be launched on its
+         own. See calibration_pipeline.launch.xml (no classifier needed) and
+         asyncronous.launch.xml (same chain, for the live async control
+         path) for the other two variants.
     -->
-    <arg name="gdf_file" default="$(find-pkg-share ros2neuro_decoder_py)/extra/test_mi.gdf"/>
+    <arg name="gdf_file" default="/home/paolo/Cortical_Peaks_Challenge_2026/recordings/test_mi.gdf"/>
     <arg name="decoder_model_path" default="$(find-pkg-share ros2neuro_decoder_py)/extra/eegnet_mi_bhbf"/>
     <arg name="samplerate" default="512"/>
     <arg name="framerate" default="16.0"/>
@@ -59,6 +61,8 @@
         <param name="output_topic" value="/integrated/raw"/>
         <param name="integrator.name" value="mi_buffer_integrator"/>
         <param name="integrator.type" value="ros2neuro::integrator::Buffer"/>
-        <param name="integrator.params.buffer_size" value="48"/>
+        <param name="integrator.params.buffer_size" value="256"/>
+        <param name="integrator.params.increment" value="1"/>
+        <param name="integrator.reset_event" value="781"/>
     </node>
 </launch>

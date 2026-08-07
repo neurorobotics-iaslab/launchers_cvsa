@@ -98,7 +98,17 @@ def generate_launch_description() -> LaunchDescription:
             PathJoinSubstitution([FindPackageShare("ros2neuro_feedback_wheel"), "launch", "wheel.launch.xml"])
         ),
         launch_arguments={
-            **{name: LaunchConfiguration(name) for name in THRESHOLD_DEFAULTS},
+            "thresholds": [
+                "[",
+                LaunchConfiguration("threshold_1"),
+                ", ",
+                LaunchConfiguration("threshold_2"),
+                ", ",
+                LaunchConfiguration("threshold_3"),
+                ", ",
+                LaunchConfiguration("threshold_4"),
+                "]",
+            ],
             "mode": "control",
             "input_topic": LaunchConfiguration("control_topic"),
         }.items(),
