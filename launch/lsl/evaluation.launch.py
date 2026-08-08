@@ -1,13 +1,13 @@
-"""Full MI pipeline (GDF playback, see evaluation_pipeline.launch.xml) + an
-evaluation training session: game_controller's training_controller
+"""Full MI pipeline (live LSL stream, see evaluation_pipeline.launch.xml) +
+an evaluation training session: game_controller's training_controller
 (modality:=evaluation, real classifier output from the pipeline) plus the
 passive wheel in training mode, plus an XDF recorder for the session (the
 recorder node is built directly here, same as calibration.launch.py -- no
 dependency on ros2neuro_recorder_xdf's own launch file).
 
 Usage:
-    ros2 launch launchers_bci evaluation.launch.py
-    ros2 launch launchers_bci evaluation.launch.py classes:="[773, 771, 783]" trials:="[10, 10, 5]"
+    ros2 launch launchers_bci lsl/evaluation.launch.py
+    ros2 launch launchers_bci lsl/evaluation.launch.py classes:="[773, 771, 783]" trials:="[10, 10, 5]"
 """
 
 from __future__ import annotations
@@ -39,7 +39,9 @@ def generate_launch_description() -> LaunchDescription:
 
     pipeline_launch = IncludeLaunchDescription(
         AnyLaunchDescriptionSource(
-            PathJoinSubstitution([FindPackageShare("launchers_bci"), "launch", "evaluation_pipeline.launch.xml"])
+            PathJoinSubstitution(
+                [FindPackageShare("launchers_bci"), "launch", "lsl", "evaluation_pipeline.launch.xml"]
+            )
         ),
     )
 

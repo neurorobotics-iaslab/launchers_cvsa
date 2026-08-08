@@ -1,6 +1,6 @@
-"""Calibration session: includes calibration_pipeline.launch.xml (GDF-replayed
-acquisition -> filters -> buffer, no classifier -- part of this same
-launchers_bci package) and directly launches game_controller's
+"""Calibration session: includes calibration_pipeline.launch.xml (live
+g.USBamp acquisition -> filters -> buffer, no classifier -- part of this
+same launchers_bci package) and directly launches game_controller's
 training_controller (modality:=calibration, fake feedback via Autopilot),
 the passive wheel in training mode, and an XDF recorder (so the session
 produces a new GDF, e.g. for training a classifier later) -- no dependency
@@ -13,9 +13,9 @@ decide hit/miss) and the wheel (whose markers are purely visual), so the
 markers always sit exactly where a hit is actually triggered.
 
 Usage:
-    ros2 launch launchers_bci calibration.launch.py
-    ros2 launch launchers_bci calibration.launch.py classes:="[773, 771, 783]" trials:="[10, 10, 5]"
-    ros2 launch launchers_bci calibration.launch.py thresholds:="[0.75, 0.25]"
+    ros2 launch launchers_bci gtec/calibration.launch.py
+    ros2 launch launchers_bci gtec/calibration.launch.py classes:="[773, 771, 783]" trials:="[10, 10, 5]"
+    ros2 launch launchers_bci gtec/calibration.launch.py thresholds:="[0.75, 0.25]"
 """
 
 from __future__ import annotations
@@ -54,7 +54,9 @@ def generate_launch_description() -> LaunchDescription:
 
     pipeline_launch = IncludeLaunchDescription(
         AnyLaunchDescriptionSource(
-            PathJoinSubstitution([FindPackageShare("launchers_bci"), "launch", "calibration_pipeline.launch.xml"])
+            PathJoinSubstitution(
+                [FindPackageShare("launchers_bci"), "launch", "gtec", "calibration_pipeline.launch.xml"]
+            )
         ),
     )
 

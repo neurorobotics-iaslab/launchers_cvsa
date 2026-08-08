@@ -1,4 +1,4 @@
-"""Full MI pipeline (GDF playback, see asyncronous.launch.xml) + the
+"""Full MI pipeline (live LSL stream, see asyncronous.launch.xml) + the
 asynchronous/continuous game control path: two_class_threshold_controller
 (decides INPUT_A/C/B and sends to game_bridge) plus the passive wheel in
 control mode, plus an XDF recorder for the session (the recorder node is
@@ -8,8 +8,8 @@ game_bridge -- point a local game server at it first (see the top-level
 repo README's dummy-mode instructions).
 
 Usage:
-    ros2 launch launchers_bci control.launch.py
-    ros2 launch launchers_bci control.launch.py target:=host threshold_1:=0.25
+    ros2 launch launchers_bci lsl/control.launch.py
+    ros2 launch launchers_bci lsl/control.launch.py target:=host threshold_1:=0.25
 """
 
 from __future__ import annotations
@@ -23,10 +23,10 @@ from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
 
 THRESHOLD_DEFAULTS = {
-    "threshold_1": "0.3",
-    "threshold_2": "0.4",
-    "threshold_3": "0.6",
-    "threshold_4": "0.7",
+    "threshold_1": "0.1",
+    "threshold_2": "0.25",
+    "threshold_3": "0.7",
+    "threshold_4": "0.85",
 }
 
 CONTROLLER_EXTRA_DEFAULTS = {
@@ -62,7 +62,7 @@ def generate_launch_description() -> LaunchDescription:
 
     pipeline_launch = IncludeLaunchDescription(
         AnyLaunchDescriptionSource(
-            PathJoinSubstitution([FindPackageShare("launchers_bci"), "launch", "asyncronous.launch.xml"])
+            PathJoinSubstitution([FindPackageShare("launchers_bci"), "launch", "lsl", "asyncronous.launch.xml"])
         ),
     )
 
