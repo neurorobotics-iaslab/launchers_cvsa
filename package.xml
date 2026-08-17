@@ -24,6 +24,7 @@
   <exec_depend>game_controller</exec_depend>
   <exec_depend>ros2neuro_feedback_wheel</exec_depend>
   <exec_depend>game_bridge</exec_depend>
+  <exec_depend>ros2neuro_visualizer</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>

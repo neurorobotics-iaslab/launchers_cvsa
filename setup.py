@@ -31,6 +31,7 @@ setup(
                 "launch/lsl/calibration.launch.py",
                 "launch/lsl/evaluation.launch.py",
                 "launch/lsl/control.launch.py",
+                "launch/lsl/visualizer.launch.py",
             ],
         ),
         (
