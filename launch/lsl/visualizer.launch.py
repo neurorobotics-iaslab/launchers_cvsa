@@ -24,9 +24,9 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description() -> LaunchDescription:
     launch_args = [
-        DeclareLaunchArgument("stream_name", default_value="", description="LSL stream name to connect to (empty: any)"),
+        DeclareLaunchArgument("stream_name", default_value="LiveAmpSN-054211-0242", description="LSL stream name to connect to (empty: any)"),
         DeclareLaunchArgument("stream_type", default_value="EEG", description="LSL stream type to connect to"),
-        DeclareLaunchArgument("framerate", default_value="16.0", description="acquisition publish framerate (Hz)"),
+        DeclareLaunchArgument("framerate", default_value="20.0", description="acquisition publish framerate (Hz)"),
     ]
 
     acquisition_node = Node(
@@ -45,8 +45,7 @@ def generate_launch_description() -> LaunchDescription:
                 "acquisition.max_buffered_samples": 5120,
                 "acquisition.sensors.eeg.enable": True,
                 "acquisition.sensors.eeg.name": "EEG",
-                "acquisition.sensors.eeg.labels": [],
-                "acquisition.sensors.exg.enable": False,
+                "acquisition.sensors.exg.enable": True,
                 "acquisition.sensors.exg.name": "EXG",
                 "acquisition.triggers.trigger.enable": True,
                 "acquisition.triggers.trigger.name": "TRI",

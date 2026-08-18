@@ -26,7 +26,6 @@
         <param name="acquisition.max_buffered_samples" value="5120"/>
         <param name="acquisition.sensors.eeg.enable" value="true"/>
         <param name="acquisition.sensors.eeg.name" value="EEG"/>
-        <param name="acquisition.sensors.eeg.labels" value="[]"/>
         <param name="acquisition.sensors.exg.enable" value="false"/>
         <param name="acquisition.sensors.exg.name" value="EXG"/>
         <param name="acquisition.triggers.trigger.enable" value="true"/>

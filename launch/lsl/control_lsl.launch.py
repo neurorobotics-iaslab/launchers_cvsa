@@ -8,8 +8,8 @@ game_bridge -- point a local game server at it first (see the top-level
 repo README's dummy-mode instructions).
 
 Usage:
-    ros2 launch launchers_bci lsl/control.launch.py
-    ros2 launch launchers_bci lsl/control.launch.py target:=host threshold_1:=0.25
+    ros2 launch launchers_bci control_lsl.launch.py
+    ros2 launch launchers_bci control_lsl.launch.py target:=host threshold_1:=0.25
 """
 
 from __future__ import annotations

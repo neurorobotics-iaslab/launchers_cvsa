@@ -24,13 +24,13 @@ setup(
         (
             f"share/{package_name}/launch/lsl",
             [
-                "launch/lsl/bci.launch.py",
+                "launch/lsl/bci_lsl.launch.py",
                 "launch/lsl/calibration_pipeline.launch.xml",
                 "launch/lsl/evaluation_pipeline.launch.xml",
                 "launch/lsl/asyncronous.launch.xml",
-                "launch/lsl/calibration.launch.py",
-                "launch/lsl/evaluation.launch.py",
-                "launch/lsl/control.launch.py",
+                "launch/lsl/calibration_lsl.launch.py",
+                "launch/lsl/evaluation_lsl.launch.py",
+                "launch/lsl/control_lsl.launch.py",
                 "launch/lsl/visualizer.launch.py",
             ],
         ),

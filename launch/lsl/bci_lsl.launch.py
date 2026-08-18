@@ -9,8 +9,8 @@ and stream configuration, and guessing a wrong value would silently produce
 mis-timed data rather than fail loudly.
 
 Usage:
-    ros2 launch launchers_bci lsl/bci.launch.py framerate:=512
-    ros2 launch launchers_bci lsl/bci.launch.py framerate:=512 subject:=sub-01 session:=01 threshold_1:=0.25
+    ros2 launch launchers_bci bci_lsl.launch.py framerate:=512
+    ros2 launch launchers_bci bci_lsl.launch.py framerate:=512 subject:=sub-01 session:=01 threshold_1:=0.25
 """
 
 from __future__ import annotations
