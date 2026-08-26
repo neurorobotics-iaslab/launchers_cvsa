@@ -9,10 +9,10 @@
          own. See evaluation_pipeline.launch.xml and asyncronous.launch.xml
          for the two variants that do run the classifier.
     -->
-    <arg name="stream_name" default=""/>
+    <arg name="stream_name" default="LiveAmpSN-054211-0242"/>
     <arg name="stream_type" default="EEG"/>
-    <arg name="samplerate" default="512"/>
-    <arg name="framerate" default="16.0"/>
+    <arg name="samplerate" default="500"/>
+    <arg name="framerate" default="20.0"/>
 
     <node pkg="ros2neuro_acquisition" exec="acquisition" name="acquisition" output="screen">
         <param name="acquisition.plugin" value="ros2neuro::acquisition::LSLDevice"/>
@@ -24,9 +24,9 @@
         <param name="acquisition.max_buffered_samples" value="5120"/>
         <param name="acquisition.sensors.eeg.enable" value="true"/>
         <param name="acquisition.sensors.eeg.name" value="EEG"/>
-        <param name="acquisition.sensors.exg.enable" value="true"/>
+        <param name="acquisition.sensors.exg.enable" value="false"/>
         <param name="acquisition.sensors.exg.name" value="EXG"/>
-        <param name="acquisition.triggers.trigger.enable" value="true"/>
+        <param name="acquisition.triggers.trigger.enable" value="false"/>
         <param name="acquisition.triggers.trigger.name" value="TRI"/>
     </node>
 

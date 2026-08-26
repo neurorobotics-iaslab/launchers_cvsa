@@ -1,16 +1,15 @@
-"""Full MI pipeline (live g.USBamp acquisition, see asyncronous.launch.xml)
-+ the asynchronous/continuous game control path:
-two_class_threshold_controller (decides INPUT_A/C/B and sends to
-game_bridge) plus the passive wheel in control mode, plus an XDF recorder
-for the session (the recorder node is built directly here, same as
-calibration.launch.py/evaluation.launch.py -- no dependency on
-ros2neuro_recorder_xdf's own launch file). Also starts game_bridge -- point
-a local game server at it first (see the top-level repo README's dummy-mode
-instructions).
+"""Full MI pipeline (GDF playback, see asyncronous.launch.xml) + the
+asynchronous/continuous game control path: two_class_threshold_controller
+(decides INPUT_A/C/B and sends to game_bridge) plus the passive wheel in
+control mode, plus an XDF recorder for the session (the recorder node is
+built directly here, same as calibration.launch.py/evaluation.launch.py --
+no dependency on ros2neuro_recorder_xdf's own launch file). Also starts
+game_bridge -- point a local game server at it first (see the top-level
+repo README's dummy-mode instructions).
 
 Usage:
-    ros2 launch launchers_bci gtec/control.launch.py
-    ros2 launch launchers_bci gtec/control.launch.py target:=host threshold_1:=0.25
+    ros2 launch launchers_bci control_gdf.launch.py
+    ros2 launch launchers_bci control_gdf.launch.py target:=host threshold_1:=0.25
 """
 
 from __future__ import annotations
@@ -63,7 +62,7 @@ def generate_launch_description() -> LaunchDescription:
 
     pipeline_launch = IncludeLaunchDescription(
         AnyLaunchDescriptionSource(
-            PathJoinSubstitution([FindPackageShare("launchers_bci"), "launch", "gtec", "asyncronous.launch.xml"])
+            PathJoinSubstitution([FindPackageShare("launchers_bci"), "launch", "gdf", "asyncronous.launch.xml"])
         ),
     )
 

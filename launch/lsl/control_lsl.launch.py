@@ -42,7 +42,7 @@ CONTROLLER_EXTRA_DEFAULTS = {
 
 RECORDER_DEFAULTS = {
     "output_directory": "./recordings",
-    "subject": "paolo",
+    "subject": "vernon72",
     "session": "",
 }
 

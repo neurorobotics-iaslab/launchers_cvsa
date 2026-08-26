@@ -12,11 +12,11 @@
          calibration_pipeline.launch.xml (no classifier needed) for the
          other two variants.
     -->
-    <arg name="stream_name" default=""/>
+    <arg name="stream_name" default="LiveAmpSN-054211-0242"/>
     <arg name="stream_type" default="EEG"/>
-    <arg name="decoder_model_path" default="/home/paolo/Cortical_Peaks_Challenge_2026/scripts/outputs/eegnet_mi_paolo"/>
-    <arg name="samplerate" default="512"/>
-    <arg name="framerate" default="16.0"/>
+    <arg name="decoder_model_path" default="/home/paolo/Cortical_Peaks_Challenge_2026/scripts/outputs/eegnet_mi_vernon72"/>
+    <arg name="samplerate" default="500"/>
+    <arg name="framerate" default="20.0"/>
 
     <node pkg="ros2neuro_acquisition" exec="acquisition" name="acquisition" output="screen">
         <param name="acquisition.plugin" value="ros2neuro::acquisition::LSLDevice"/>
@@ -70,7 +70,7 @@
         <param name="output_topic" value="/integrated/raw"/>
         <param name="integrator.name" value="mi_buffer_integrator"/>
         <param name="integrator.type" value="ros2neuro::integrator::Buffer"/>
-        <param name="integrator.params.buffer_size" value="256"/>
+        <param name="integrator.params.buffer_size" value="200"/>
         <param name="integrator.params.increment" value="1"/>
     </node>
 </launch>

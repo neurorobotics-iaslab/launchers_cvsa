@@ -13,9 +13,9 @@ decide hit/miss) and the wheel (whose markers are purely visual), so the
 markers always sit exactly where a hit is actually triggered.
 
 Usage:
-    ros2 launch launchers_bci gdf/calibration.launch.py
-    ros2 launch launchers_bci gdf/calibration.launch.py classes:="[773, 771, 783]" trials:="[10, 10, 5]"
-    ros2 launch launchers_bci gdf/calibration.launch.py thresholds:="[0.75, 0.25]"
+    ros2 launch launchers_bci calibration_gdf.launch.py
+    ros2 launch launchers_bci calibration_gdf.launch.py classes:="[773, 771, 783]" trials:="[10, 10, 5]"
+    ros2 launch launchers_bci calibration_gdf.launch.py thresholds:="[0.75, 0.25]"
 """
 
 from __future__ import annotations

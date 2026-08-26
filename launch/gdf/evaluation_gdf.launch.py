@@ -6,8 +6,8 @@ recorder node is built directly here, same as calibration.launch.py -- no
 dependency on ros2neuro_recorder_xdf's own launch file).
 
 Usage:
-    ros2 launch launchers_bci gdf/evaluation.launch.py
-    ros2 launch launchers_bci gdf/evaluation.launch.py classes:="[773, 771, 783]" trials:="[10, 10, 5]"
+    ros2 launch launchers_bci evaluation_gdf.launch.py
+    ros2 launch launchers_bci evaluation_gdf.launch.py classes:="[773, 771, 783]" trials:="[10, 10, 5]"
 """
 
 from __future__ import annotations

@@ -45,9 +45,9 @@ def generate_launch_description() -> LaunchDescription:
                 "acquisition.max_buffered_samples": 5120,
                 "acquisition.sensors.eeg.enable": True,
                 "acquisition.sensors.eeg.name": "EEG",
-                "acquisition.sensors.exg.enable": True,
+                "acquisition.sensors.exg.enable": False,
                 "acquisition.sensors.exg.name": "EXG",
-                "acquisition.triggers.trigger.enable": True,
+                "acquisition.triggers.trigger.enable": False,
                 "acquisition.triggers.trigger.name": "TRI",
             }
         ],

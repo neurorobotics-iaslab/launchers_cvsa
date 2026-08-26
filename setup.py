@@ -12,19 +12,17 @@ setup(
         (
             f"share/{package_name}/launch/gdf",
             [
-                "launch/gdf/bci.launch.py",
                 "launch/gdf/calibration_pipeline.launch.xml",
                 "launch/gdf/evaluation_pipeline.launch.xml",
                 "launch/gdf/asyncronous.launch.xml",
-                "launch/gdf/calibration.launch.py",
-                "launch/gdf/evaluation.launch.py",
-                "launch/gdf/control.launch.py",
+                "launch/gdf/calibration_gdf.launch.py",
+                "launch/gdf/evaluation_gdf.launch.py",
+                "launch/gdf/control_gdf.launch.py",
             ],
         ),
         (
             f"share/{package_name}/launch/lsl",
             [
-                "launch/lsl/bci_lsl.launch.py",
                 "launch/lsl/calibration_pipeline.launch.xml",
                 "launch/lsl/evaluation_pipeline.launch.xml",
                 "launch/lsl/asyncronous.launch.xml",
@@ -37,13 +35,12 @@ setup(
         (
             f"share/{package_name}/launch/gtec",
             [
-                "launch/gtec/bci.launch.py",
                 "launch/gtec/calibration_pipeline.launch.xml",
                 "launch/gtec/evaluation_pipeline.launch.xml",
                 "launch/gtec/asyncronous.launch.xml",
-                "launch/gtec/calibration.launch.py",
-                "launch/gtec/evaluation.launch.py",
-                "launch/gtec/control.launch.py",
+                "launch/gtec/calibration_gtec.launch.py",
+                "launch/gtec/evaluation_gtec.launch.py",
+                "launch/gtec/control_gtec.launch.py",
             ],
         ),
     ],
