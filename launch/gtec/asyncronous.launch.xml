@@ -3,14 +3,12 @@
          acquisition(gusbamp) -> filters -> buffer -> decoder -> integrator,
          with a parallel filters_blink -> blink_detector tap watching for
          blink artifacts and publishing onset/offset events on /neuroevent
-         (see ros2neuro_artifact_blink/README.md); it does not gate the
+         (see filters_gtec.launch.xml and
+         ros2neuro_artifact_blink/README.md); it does not gate the
          prediction stream, the integrator keeps running through a blink;
          game_controller's threshold controllers suppress outgoing
-         /game/command while the published window is open instead.
-         blink_detector withholds detection until it has a matched
-         /neuroevent subscriber (see its README), so it never publishes
-         before the session recorder has subscribed. Ends by publishing
-         /integrated/raw (two per-class values, see
+         /game/command while the published window is open instead. Ends by
+         publishing /integrated/raw (two per-class values, see
          game_controller/README.md). Same chain as
          gdf/asyncronous.launch.xml, with the acquisition node swapped for
          the g.USBamp backend (see
@@ -53,40 +51,14 @@
         <arg name="framerate" value="$(var framerate)"/>
     </include>
 
-    <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters" output="screen">
-        <param name="filters.chain" value="[hp, lp]"/>
-        <param name="filters.hp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
-        <param name="filters.hp.order" value="2"/>
-        <param name="filters.hp.samplerate" value="$(var samplerate)"/>
-        <param name="filters.hp.cutoff" value="4.0"/>
-        <param name="filters.hp.type" value="highpass"/>
-        <param name="filters.lp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
-        <param name="filters.lp.order" value="2"/>
-        <param name="filters.lp.samplerate" value="$(var samplerate)"/>
-        <param name="filters.lp.cutoff" value="14.0"/>
-        <param name="filters.lp.type" value="lowpass"/>
-        <remap from="/neurodata" to="/acquisition/neurodata"/>
-        <remap from="~/filtered" to="/processing/filtered"/>
-    </node>
-
-    <!-- Second, independent tap on the same raw acquisition, filtered to a
-         band that keeps blink content (blinks are ~1-3 Hz and are removed
-         by the hp=4Hz filter above, used for MI classification). -->
-    <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters_blink" output="screen">
-        <param name="filters.chain" value="[hp, lp]"/>
-        <param name="filters.hp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
-        <param name="filters.hp.order" value="2"/>
-        <param name="filters.hp.samplerate" value="$(var samplerate)"/>
-        <param name="filters.hp.cutoff" value="1.0"/>
-        <param name="filters.hp.type" value="highpass"/>
-        <param name="filters.lp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
-        <param name="filters.lp.order" value="2"/>
-        <param name="filters.lp.samplerate" value="$(var samplerate)"/>
-        <param name="filters.lp.cutoff" value="10.0"/>
-        <param name="filters.lp.type" value="lowpass"/>
-        <remap from="/neurodata" to="/acquisition/neurodata"/>
-        <remap from="~/filtered" to="/processing/filtered_blink"/>
-    </node>
+    <include file="$(find-pkg-share launchers_bci)/launch/gtec/filters_gtec.launch.xml">
+        <arg name="samplerate" value="$(var samplerate)"/>
+        <arg name="filters_lp_cutoff" value="14.0"/>
+        <arg name="artifact_channels" value="$(var artifact_channels)"/>
+        <arg name="freeze_duration_sec" value="$(var freeze_duration_sec)"/>
+        <arg name="threshold_vertical" value="$(var threshold_vertical)"/>
+        <arg name="threshold_horizontal" value="$(var threshold_horizontal)"/>
+    </include>
 
     <node pkg="ros2neuro_processing_buffer" exec="buffer_node" name="buffer" output="screen">
         <param name="sensor_name" value="EEG"/>
@@ -101,21 +73,6 @@
         <param name="decoder.name" value="eegnet_bhbf"/>
         <remap from="/features" to="/processing/buffered_features"/>
         <remap from="~/prediction" to="/classification/prediction"/>
-    </node>
-
-    <!-- Watches filters_blink's output and publishes onset/offset events on
-         /neuroevent; it does NOT touch the prediction stream, so the
-         integrator below keeps integrating right through a blink. Downstream
-         consumers (game_controller's threshold controllers) suppress
-         outgoing /game/command while the published window is open instead.
-         See its README for how it waits for a subscriber. -->
-    <node pkg="ros2neuro_artifact_blink" exec="blink_detector_node" name="blink_detector" output="screen">
-        <param name="sensor_name" value="EEG"/>
-        <param name="artifact_channels" value="$(var artifact_channels)"/>
-        <param name="freeze_duration_sec" value="$(var freeze_duration_sec)"/>
-        <param name="threshold_vertical" value="$(var threshold_vertical)"/>
-        <param name="threshold_horizontal" value="$(var threshold_horizontal)"/>
-        <remap from="/neurodata_filtered" to="/processing/filtered_blink"/>
     </node>
 
     <node pkg="ros2neuro_integrator" exec="integrator_node" name="integrator" output="screen">
