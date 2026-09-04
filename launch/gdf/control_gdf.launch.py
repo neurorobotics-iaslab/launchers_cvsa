@@ -1,15 +1,19 @@
 """Full MI pipeline (GDF playback, see asyncronous.launch.xml) + the
-asynchronous/continuous game control path: two_class_threshold_controller
-(decides INPUT_A/C/B and sends to game_bridge) plus the passive wheel in
-control mode, plus an XDF recorder for the session (the recorder node is
-built directly here, same as calibration.launch.py/evaluation.launch.py --
-no dependency on ros2neuro_recorder_xdf's own launch file). Also starts
-game_bridge -- point a local game server at it first (see the top-level
-repo README's dummy-mode instructions).
+asynchronous/continuous game control path: a game_controller threshold
+controller -- either controlWithDeathZone.launch.py (default, dead zone
+between commands, reset at the 0.0/1.0 extremes) or controlNoDeadZone.launch.py
+(no dead zone, reset at the outer thresholds instead), picked via the
+`controller` argument -- plus the passive wheel in control mode, plus an XDF
+recorder for the session (the recorder node is built directly here, same as
+calibration.launch.py/evaluation.launch.py -- no dependency on
+ros2neuro_recorder_xdf's own launch file). Also starts game_bridge -- point
+a local game server at it first (see the top-level repo README's dummy-mode
+instructions).
 
 Usage:
     ros2 launch launchers_bci control_gdf.launch.py
-    ros2 launch launchers_bci control_gdf.launch.py target:=host threshold_1:=0.25
+    ros2 launch launchers_bci control_gdf.launch.py target:=host th_extreme_right:=0.25
+    ros2 launch launchers_bci control_gdf.launch.py controller:=no_dead_zone
 """
 
 from __future__ import annotations
@@ -17,16 +21,37 @@ from __future__ import annotations
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import AnyLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
 
+# Same four thresholds feed either controller variant (see the `controller`
+# arg above); what each one bounds depends on which is selected. probability
+# is values[0]/(values[0]+values[1]) (see TwoClassThresholdController's
+# _derive_position): class_a (values[0]) is the numerator on purpose so it
+# dominates towards probability 1 -> wheel LEFT -- class_a must be the FIRST
+# class in the `classes` launch arg used by calibration/evaluation
+# (classes[0] == Direction::Left == the blue threshold in calibration, see
+# training_controller.cpp) for this to stay consistent everywhere.
+#  - with_dead_zone (controlWithDeathZone.launch.py, default):
+#      probability < th_extreme_right             -> INPUT_B, wheel all the way RIGHT (class_b)
+#      th_extreme_right <= probability < th_right  -> dead zone (right-of-center)
+#      th_right <= probability < th_left           -> INPUT_C, wheel CENTER (up)
+#      th_left <= probability < th_extreme_left     -> dead zone (left-of-center)
+#      probability >= th_extreme_left              -> INPUT_A, wheel all the way LEFT (class_a)
+#  - no_dead_zone (controlNoDeadZone.launch.py): no dead zone, a command is
+#    always sent; th_extreme_right/th_extreme_left instead mark when
+#    (with_reset:=true) the integrator reset fires:
+#      probability < th_right                      -> INPUT_B, wheel all the way RIGHT (class_b)
+#      th_right <= probability < th_left            -> INPUT_C, wheel CENTER (up)
+#      probability >= th_left                       -> INPUT_A, wheel all the way LEFT (class_a)
+#      probability <= th_extreme_right or >= th_extreme_left -> integrator reset
 THRESHOLD_DEFAULTS = {
-    "threshold_1": "0.1",
-    "threshold_2": "0.25",
-    "threshold_3": "0.7",
-    "threshold_4": "0.85",
+    "th_extreme_right": "0.1",  # right edge
+    "th_right": "0.25",  # center-right edge
+    "th_left": "0.7",  # center-left edge
+    "th_extreme_left": "0.85",  # left edge
 }
 
 CONTROLLER_EXTRA_DEFAULTS = {
@@ -50,6 +75,14 @@ RECORDER_DEFAULTS = {
 def generate_launch_description() -> LaunchDescription:
     launch_args = [
         DeclareLaunchArgument("target", default_value="local", description="game_bridge target: local or host"),
+        DeclareLaunchArgument(
+            "controller",
+            default_value="with_dead_zone",
+            description=(
+                "game_controller variant: with_dead_zone (controlWithDeathZone.launch.py) "
+                "or no_dead_zone (controlNoDeadZone.launch.py)"
+            ),
+        ),
         *(
             DeclareLaunchArgument(name, default_value=default, description=f"{name} for the threshold controller")
             for name, default in {**THRESHOLD_DEFAULTS, **CONTROLLER_EXTRA_DEFAULTS}.items()
@@ -66,9 +99,17 @@ def generate_launch_description() -> LaunchDescription:
         ),
     )
 
+    controller_launch_file = PythonExpression(
+        [
+            "'controlWithDeathZone.launch.py' if '",
+            LaunchConfiguration("controller"),
+            "' == 'with_dead_zone' else 'controlNoDeadZone.launch.py'",
+        ]
+    )
+
     controller_launch = IncludeLaunchDescription(
         AnyLaunchDescriptionSource(
-            PathJoinSubstitution([FindPackageShare("game_controller"), "launch", "two_class_threshold.launch.py"])
+            PathJoinSubstitution([FindPackageShare("game_controller"), "launch", controller_launch_file])
         ),
         launch_arguments={
             name: LaunchConfiguration(name) for name in {**THRESHOLD_DEFAULTS, **CONTROLLER_EXTRA_DEFAULTS}
@@ -82,13 +123,13 @@ def generate_launch_description() -> LaunchDescription:
         launch_arguments={
             "thresholds": [
                 "[",
-                LaunchConfiguration("threshold_1"),
+                LaunchConfiguration("th_extreme_right"),
                 ", ",
-                LaunchConfiguration("threshold_2"),
+                LaunchConfiguration("th_right"),
                 ", ",
-                LaunchConfiguration("threshold_3"),
+                LaunchConfiguration("th_left"),
                 ", ",
-                LaunchConfiguration("threshold_4"),
+                LaunchConfiguration("th_extreme_left"),
                 "]",
             ],
             "mode": "control",

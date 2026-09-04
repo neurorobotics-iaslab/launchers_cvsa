@@ -1,19 +1,28 @@
-"""Full MI pipeline (live g.USBamp acquisition, see asyncronous.launch.xml)
-+ the asynchronous/continuous game control path: a game_controller
-threshold controller -- either controlWithDeathZone.launch.py (default,
-dead zone between commands, reset at the 0.0/1.0 extremes) or
-controlNoDeadZone.launch.py (no dead zone, reset at the outer thresholds
-instead), picked via the `controller` argument -- plus the passive wheel in
-control mode, plus an XDF recorder for the session (the recorder node is
-built directly here, same as calibration.launch.py/evaluation.launch.py --
-no dependency on ros2neuro_recorder_xdf's own launch file). Also starts
-game_bridge -- point a local game server at it first (see the top-level
-repo README's dummy-mode instructions).
+"""Same control path as control_gdf.launch.py (GDF playback + a
+game_controller threshold controller + the passive wheel + game_bridge + an
+XDF recorder), but with the real decoder detached: asyncronous_test.launch.xml
+runs acquisition(gdf) -> filters -> buffer -> blink_detector (gate) -> integrator
+with NO decoder_node in between, and it's on you to supply classification
+manually, in a separate interactive terminal:
+
+    ros2 run ros2neuro_decoder_py keyboard_decoder_node \\
+        --ros-args -p output_topic:=/classification/prediction_raw
+
+Hold the left arrow to simulate maximal left-hand evidence (class_a=1,
+class_b=0), hold the right arrow for maximal right-hand evidence (class_a=0,
+class_b=1), release for a neutral/undecided prediction -- see that node's
+docstring. It publishes onto /classification/prediction_raw, the topic
+blink_detector (see asyncronous_test.launch.xml) gates into
+/classification/prediction, the one the integrator actually subscribes to --
+so a real blink on artifact_channels still freezes the wheel/game even while
+testing with the keyboard decoder. It must be `ros2 run`, never
+`ros2 launch` (same terminal/termios constraint as game_controller's
+dummy_keyboard_controller).
 
 Usage:
-    ros2 launch launchers_bci control_gtec.launch.py
-    ros2 launch launchers_bci control_gtec.launch.py target:=host th_extreme_right:=0.25
-    ros2 launch launchers_bci control_gtec.launch.py controller:=no_dead_zone
+    ros2 launch launchers_bci control_test.launch.py
+    ros2 launch launchers_bci control_test.launch.py target:=host th_extreme_right:=0.25
+    ros2 launch launchers_bci control_test.launch.py controller:=no_dead_zone
 """
 
 from __future__ import annotations
@@ -33,7 +42,9 @@ from launch_ros.substitutions import FindPackageShare
 # dominates towards probability 1 -> wheel LEFT -- class_a must be the FIRST
 # class in the `classes` launch arg used by calibration/evaluation
 # (classes[0] == Direction::Left == the blue threshold in calibration, see
-# training_controller.cpp) for this to stay consistent everywhere.
+# training_controller.cpp) for this to stay consistent everywhere. Matches
+# keyboard_decoder_node's own left_class_id/right_class_id defaults
+# (769/770).
 #  - with_dead_zone (controlWithDeathZone.launch.py, default):
 #      probability < th_extreme_right             -> INPUT_B, wheel all the way RIGHT (class_b)
 #      th_extreme_right <= probability < th_right  -> dead zone (right-of-center)
@@ -48,10 +59,10 @@ from launch_ros.substitutions import FindPackageShare
 #      probability >= th_left                       -> INPUT_A, wheel all the way LEFT (class_a)
 #      probability <= th_extreme_right or >= th_extreme_left -> integrator reset
 THRESHOLD_DEFAULTS = {
-    "th_extreme_right": "0.1",  # right edge
-    "th_right": "0.25",  # center-right edge
-    "th_left": "0.7",  # center-left edge
-    "th_extreme_left": "0.85",  # left edge
+    "th_extreme_right": "0.25",  # right edge
+    "th_right": "0.35",  # center-right edge
+    "th_left": "0.65",  # center-left edge
+    "th_extreme_left": "0.75",  # left edge
 }
 
 CONTROLLER_EXTRA_DEFAULTS = {
@@ -67,17 +78,8 @@ CONTROLLER_EXTRA_DEFAULTS = {
 
 RECORDER_DEFAULTS = {
     "output_directory": "./recordings",
-    "subject": "paolo",
+    "subject": "test",
     "session": "",
-}
-
-# Forwarded to asyncronous.launch.xml's blink_detector node -- see
-# ros2neuro_artifact_blink/src/blink_detector_node.cpp for what each one does.
-BLINK_DEFAULTS = {
-    "artifact_channels": "[Fz, Fz]",
-    "freeze_duration_sec": "1.0",
-    "threshold_vertical": "4.0",
-    "threshold_horizontal": "4.0",
 }
 
 
@@ -86,7 +88,7 @@ def generate_launch_description() -> LaunchDescription:
         DeclareLaunchArgument("target", default_value="local", description="game_bridge target: local or host"),
         DeclareLaunchArgument(
             "controller",
-            default_value="with_dead_zone",
+            default_value="no_dead_zone",
             description=(
                 "game_controller variant: with_dead_zone (controlWithDeathZone.launch.py) "
                 "or no_dead_zone (controlNoDeadZone.launch.py)"
@@ -100,17 +102,12 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(name, default_value=default, description=f"{name} for the recorder")
             for name, default in RECORDER_DEFAULTS.items()
         ),
-        *(
-            DeclareLaunchArgument(name, default_value=default, description=f"{name} for blink_detector")
-            for name, default in BLINK_DEFAULTS.items()
-        ),
     ]
 
     pipeline_launch = IncludeLaunchDescription(
         AnyLaunchDescriptionSource(
-            PathJoinSubstitution([FindPackageShare("launchers_bci"), "launch", "gtec", "asyncronous.launch.xml"])
+            PathJoinSubstitution([FindPackageShare("launchers_bci"), "launch", "test", "asyncronous_test.launch.xml"])
         ),
-        launch_arguments={name: LaunchConfiguration(name) for name in BLINK_DEFAULTS}.items(),
     )
 
     controller_launch_file = PythonExpression(
@@ -167,7 +164,7 @@ def generate_launch_description() -> LaunchDescription:
             {
                 "plugin": "ros2neuro::recorder::XDFRecorder",
                 # acquisition publishes on its private "~/neurodata" topic
-                # (see asyncronous.launch.xml's filters remap).
+                # (see asyncronous_test.launch.xml's filters remap).
                 "topic_data": "/acquisition/neurodata",
                 "topic_info": "/acquisition/neurodata_info",
                 "topic_event": "/neuroevent",

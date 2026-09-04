@@ -1,0 +1,30 @@
+<launch>
+    <!-- Shared acquisition node for the live LSL backend (LSLDevice plugin):
+         identical across asyncronous.launch.xml,
+         calibration_pipeline.launch.xml and evaluation_pipeline.launch.xml
+         except for acquisition.triggers.trigger.enable (calibration doesn't
+         need the trigger line, so it passes enable_trigger:=false), so it
+         lives here once and each of the three includes it instead of
+         redeclaring the <node>. See
+         ros2neuro_acquisition_lsl/config/lsl_configuration.yaml. -->
+    <arg name="stream_name" default="LiveAmpSN-054211-0242"/>
+    <arg name="stream_type" default="EEG"/>
+    <arg name="framerate" default="20.0"/>
+    <arg name="enable_trigger" default="true"/>
+
+    <node pkg="ros2neuro_acquisition" exec="acquisition" name="acquisition" output="screen">
+        <param name="acquisition.plugin" value="ros2neuro::acquisition::LSLDevice"/>
+        <param name="acquisition.autostart" value="true"/>
+        <param name="acquisition.reopen" value="true"/>
+        <param name="acquisition.framerate" value="$(var framerate)"/>
+        <param name="acquisition.stream_type" value="$(var stream_type)"/>
+        <param name="acquisition.stream_name" value="$(var stream_name)"/>
+        <param name="acquisition.max_buffered_samples" value="5120"/>
+        <param name="acquisition.sensors.eeg.enable" value="true"/>
+        <param name="acquisition.sensors.eeg.name" value="EEG"/>
+        <param name="acquisition.sensors.exg.enable" value="false"/>
+        <param name="acquisition.sensors.exg.name" value="EXG"/>
+        <param name="acquisition.triggers.trigger.enable" value="$(var enable_trigger)"/>
+        <param name="acquisition.triggers.trigger.name" value="TRI"/>
+    </node>
+</launch>

@@ -29,7 +29,7 @@ setup(
                 "launch/lsl/calibration_lsl.launch.py",
                 "launch/lsl/evaluation_lsl.launch.py",
                 "launch/lsl/control_lsl.launch.py",
-                "launch/lsl/visualizer.launch.py",
+                "launch/lsl/visualizer_lsl.launch.py",
             ],
         ),
         (
@@ -41,6 +41,14 @@ setup(
                 "launch/gtec/calibration_gtec.launch.py",
                 "launch/gtec/evaluation_gtec.launch.py",
                 "launch/gtec/control_gtec.launch.py",
+                "launch/gtec/visualizer_gtec.launch.py",
+            ],
+        ),
+        (
+            f"share/{package_name}/launch/test",
+            [
+                "launch/test/asyncronous_test.launch.xml",
+                "launch/test/control_test.launch.py",
             ],
         ),
     ],

@@ -17,7 +17,8 @@ file rather than duplicating its parameters):
   dummy) once needed.
 - **Recording** -- `ros2neuro_recorder_xdf`'s `xdf_recorder.launch.py`
   (XDF/GDF/BDF output via `xdffileio`).
-- **Game control** -- `game_controller`'s `two_class_threshold.launch.py`.
+- **Game control** -- `game_controller`'s `controlWithDeathZone.launch.py`
+  (or `controlNoDeadZone.launch.py`, see that package's README).
 - **Feedback wheel** -- `ros2neuro_feedback_wheel`'s `wheel.launch.xml`,
   `mode:=control`, `input_topic` pointed at the controller's `control_topic`.
 
@@ -30,7 +31,7 @@ hardware, see the GDF-playback launchers below instead.
 
 ```bash
 ros2 launch launchers_bci bci.launch.py framerate:=512
-ros2 launch launchers_bci bci.launch.py framerate:=512 subject:=sub-01 session:=01 threshold_1:=0.25
+ros2 launch launchers_bci bci.launch.py framerate:=512 subject:=sub-01 session:=01 th_extreme_right:=0.25
 ```
 
 `framerate` has no default and must be passed explicitly -- it depends on
@@ -44,7 +45,7 @@ mis-timed recordings instead of failing loudly.
 | `output_directory`     | `.`                                                   | Recorder output directory             |
 | `subject`              | `unknown`                                             | Recorder subject id                   |
 | `session`              | *(empty)*                                             | Recorder session id                   |
-| `threshold_1..4`       | `0.3` / `0.4` / `0.6` / `0.7`                          | See `game_controller`'s README        |
+| `th_extreme_right`/`th_right`/`th_left`/`th_extreme_left` | `0.3` / `0.4` / `0.6` / `0.7` | See `game_controller`'s README |
 
 ## Testing without hardware: GDF playback
 
@@ -100,3 +101,25 @@ ros2 launch launchers_bci evaluation.launch.py output_directory:=./recordings su
 # server at it first (see the top-level repo README's dummy-mode section)
 ros2 launch launchers_bci control.launch.py output_directory:=./recordings subject:=sub-01 session:=01
 ```
+
+## Testing without a classifier: manual keyboard-driven classification
+
+`launch/test/control_test.launch.py` is the same control path as
+`control_gdf.launch.py` (GDF playback + a `game_controller` threshold
+controller + the passive wheel + `game_bridge` + an XDF recorder), but its
+own pipeline file (`launch/test/asyncronous_test.launch.xml`) stops at
+acquisition -> filters -> buffer -> integrator, with **no `decoder_node`** --
+classification is detached and supplied manually instead, by running
+`ros2neuro_decoder_py`'s `keyboard_decoder_node` (see its README) in a
+separate interactive terminal:
+
+```bash
+ros2 launch launchers_bci control_test.launch.py
+# in a second terminal:
+ros2 run ros2neuro_decoder_py keyboard_decoder_node
+```
+
+Hold the left arrow to simulate maximal left-hand evidence, the right arrow
+for maximal right-hand evidence, release for neutral -- lets you exercise
+the whole integrator/controller/wheel/bridge chain by hand, without a
+trained model.

@@ -14,14 +14,11 @@
     <arg name="framerate" default="16.0"/>
     <arg name="loop" default="true"/>
 
-    <node pkg="ros2neuro_acquisition" exec="acquisition" name="acquisition" output="screen">
-        <param name="acquisition.plugin" value="ros2neuro::acquisition::XDFDevice"/>
-        <param name="acquisition.filename" value="$(var gdf_file)"/>
-        <param name="acquisition.framerate" value="$(var framerate)"/>
-        <param name="acquisition.loop" value="$(var loop)"/>
-        <param name="acquisition.autostart" value="true"/>
-        <param name="acquisition.reopen" value="true"/>
-    </node>
+    <include file="$(find-pkg-share launchers_bci)/launch/gdf/acquisition_gdf.launch.xml">
+        <arg name="gdf_file" value="$(var gdf_file)"/>
+        <arg name="framerate" value="$(var framerate)"/>
+        <arg name="loop" value="$(var loop)"/>
+    </include>
 
     <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters" output="screen">
         <param name="filters.chain" value="[hp, lp]"/>

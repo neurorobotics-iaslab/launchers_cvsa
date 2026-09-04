@@ -7,8 +7,8 @@ can be inspected live after connecting to an LSL stream, without running the
 rest of the classification pipeline.
 
 Usage:
-    ros2 launch launchers_bci lsl/visualizer.launch.py
-    ros2 launch launchers_bci lsl/visualizer.launch.py stream_name:=my_stream
+    ros2 launch launchers_bci lsl/visualizer_lsl.launch.py
+    ros2 launch launchers_bci lsl/visualizer_lsl.launch.py stream_name:=my_stream
 """
 
 from __future__ import annotations

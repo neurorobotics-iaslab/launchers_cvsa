@@ -14,27 +14,12 @@
     <arg name="samplerate" default="512"/>
     <arg name="framerate" default="16.0"/>
 
-    <node pkg="ros2neuro_acquisition" exec="acquisition" name="acquisition" output="screen">
-        <param name="acquisition.plugin" value="ros2neuro::acquisition::GUSBampDevice"/>
-        <param name="acquisition.autostart" value="true"/>
-        <param name="acquisition.reopen" value="true"/>
-        <param name="acquisition.samplerate" value="$(var samplerate)"/>
-        <param name="acquisition.framerate" value="$(var framerate)"/>
-        <param name="acquisition.device" value="$(var device)"/>
-        <param name="acquisition.channels" value="$(var channels)"/>
-        <param name="acquisition.enable_trigger_line" value="true"/>
-        <param name="acquisition.scan_dio" value="true"/>
-        <param name="acquisition.slave_mode" value="false"/>
-        <param name="acquisition.enable_sc" value="false"/>
-        <param name="acquisition.bandpass_filter" value="-1"/>
-        <param name="acquisition.notch_filter" value="-1"/>
-        <param name="acquisition.bipolar_derivation" value="-2"/>
-        <param name="acquisition.sensors.eeg.enable" value="true"/>
-        <param name="acquisition.sensors.eeg.name" value="EEG"/>
-        <param name="acquisition.sensors.eeg.labels" value="[Fz, FC3, FC1, FCz, FC2, FC4, C3, C1, Cz, C2, C4, CP3, CP1, CPz, CP2, CP4]"/>
-        <param name="acquisition.triggers.trigger.enable" value="true"/>
-        <param name="acquisition.triggers.trigger.name" value="TRI"/>
-    </node>
+    <include file="$(find-pkg-share launchers_bci)/launch/gtec/acquisition_gtec.launch.xml">
+        <arg name="device" value="$(var device)"/>
+        <arg name="channels" value="$(var channels)"/>
+        <arg name="samplerate" value="$(var samplerate)"/>
+        <arg name="framerate" value="$(var framerate)"/>
+    </include>
 
     <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters" output="screen">
         <param name="filters.chain" value="[hp, lp]"/>

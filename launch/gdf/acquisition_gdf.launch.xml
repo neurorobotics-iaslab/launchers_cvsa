@@ -1,0 +1,21 @@
+<launch>
+    <!-- Shared acquisition node for the GDF-replay backend (XDFDevice
+         plugin): identical across asyncronous.launch.xml,
+         calibration_pipeline.launch.xml and evaluation_pipeline.launch.xml,
+         so it lives here once and each of the three includes it instead of
+         redeclaring the <node> (only gdf_file's default differs per
+         modality, which stays declared, and overridable, in each including
+         file). -->
+    <arg name="gdf_file" default="/home/paolo/Cortical_Peaks_Challenge_2026/recordings/test_mi.gdf"/>
+    <arg name="framerate" default="16.0"/>
+    <arg name="loop" default="true"/>
+
+    <node pkg="ros2neuro_acquisition" exec="acquisition" name="acquisition" output="screen">
+        <param name="acquisition.plugin" value="ros2neuro::acquisition::XDFDevice"/>
+        <param name="acquisition.filename" value="$(var gdf_file)"/>
+        <param name="acquisition.framerate" value="$(var framerate)"/>
+        <param name="acquisition.loop" value="$(var loop)"/>
+        <param name="acquisition.autostart" value="true"/>
+        <param name="acquisition.reopen" value="true"/>
+    </node>
+</launch>

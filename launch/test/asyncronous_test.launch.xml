@@ -1,35 +1,38 @@
 <launch>
-    <!-- Classification pipeline replayed from a GDF file instead of live
-         hardware: acquisition(gdf) -> filters -> buffer -> decoder -> blink_detector (gate) -> integrator,
-         with a parallel filters_blink -> blink_detector tap watching for
-         blink artifacts (see ros2neuro_artifact_blink/README.md). Ends by
-         publishing /integrated/raw (two per-class values, see
-         game_controller/README.md). Modeled on
-         ros2neuro_decoder_py/launch/example_decoder.launch.xml.
+    <!-- Same chain as gdf/asyncronous.launch.xml (GDF playback):
+         acquisition(gdf) -> filters -> buffer -> blink_detector (gate) -> integrator,
+         plus a parallel filters_blink -> blink_detector tap, but WITHOUT the
+         decoder_node step: classification is detached here and expected
+         to be supplied manually, by running
+         ros2neuro_decoder_py's keyboard_decoder_node, pointed at
+         /classification/prediction_raw via its output_topic parameter, in a
+         separate interactive terminal (see control_test.launch.py for the
+         exact command).
+         That node now publishes on `/classification/prediction_raw`, the
+         topic blink_detector below gates into `/classification/prediction`
+         (the integrator's actual input), so it's still a drop-in
+         replacement for the real decoder, just one hop upstream of where it
+         used to publish directly. /processing/buffered_features is produced
+         here but has no subscriber, which is fine, it's just not consumed.
 
-         Included by control.launch.py (the asynchronous/continuous game
-         control path), not meant to be launched on its own. See
-         evaluation_pipeline.launch.xml (same chain, for evaluation) and
-         calibration_pipeline.launch.xml (no classifier needed) for the
-         other two variants.
-
-         NOTE: artifact_channels below is a placeholder; check the actual
-         channel labels of gdf_file (or just use numeric indices) and update
-         it, ideally to real frontal/EOG channels if the montage has them.
+         Included by control_test.launch.py, not meant to be launched on its
+         own.
     -->
     <arg name="gdf_file" default="/home/paolo/bci_vr_ws/recordings/a1/20260615/calibration/a1.20260615.121931.calibration.mi_lhrh.gdf"/>
-    <arg name="decoder_model_path" default="/home/paolo/Cortical_Peaks_Challenge_2026/scripts/outputs/eegnet_mi_paolo"/>
     <arg name="samplerate" default="512"/>
     <arg name="framerate" default="16.0"/>
     <arg name="loop" default="true"/>
     <arg name="artifact_channels" default="[Fz]"/>
     <arg name="freeze_duration_sec" default="1.0"/>
 
-    <include file="$(find-pkg-share launchers_bci)/launch/gdf/acquisition_gdf.launch.xml">
-        <arg name="gdf_file" value="$(var gdf_file)"/>
-        <arg name="framerate" value="$(var framerate)"/>
-        <arg name="loop" value="$(var loop)"/>
-    </include>
+    <node pkg="ros2neuro_acquisition" exec="acquisition" name="acquisition" output="screen">
+        <param name="acquisition.plugin" value="ros2neuro::acquisition::XDFDevice"/>
+        <param name="acquisition.filename" value="$(var gdf_file)"/>
+        <param name="acquisition.framerate" value="$(var framerate)"/>
+        <param name="acquisition.loop" value="$(var loop)"/>
+        <param name="acquisition.autostart" value="true"/>
+        <param name="acquisition.reopen" value="true"/>
+    </node>
 
     <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters" output="screen">
         <param name="filters.chain" value="[hp, lp]"/>
@@ -73,14 +76,6 @@
         <remap from="/features" to="/processing/buffered_features"/>
     </node>
 
-    <node pkg="ros2neuro_decoder_py" exec="decoder_node" name="decoder" output="screen">
-        <param name="decoder.type" value="braindecode"/>
-        <param name="decoder.model_path" value="$(var decoder_model_path)"/>
-        <param name="decoder.name" value="eegnet_bhbf"/>
-        <remap from="/features" to="/processing/buffered_features"/>
-        <remap from="~/prediction" to="/classification/prediction_raw"/>
-    </node>
-
     <!-- Gates /classification/prediction_raw -> /classification/prediction:
          while a blink is detected on filters_blink's output, predictions
          are dropped instead of forwarded, so the integrator below receives
@@ -99,7 +94,7 @@
         <param name="output_topic" value="/integrated/raw"/>
         <param name="integrator.name" value="mi_buffer_integrator"/>
         <param name="integrator.type" value="ros2neuro::integrator::Buffer"/>
-        <param name="integrator.params.buffer_size" value="256"/>
+        <param name="integrator.params.buffer_size" value="100"/>
         <param name="integrator.params.increment" value="1"/>
     </node>
 </launch>

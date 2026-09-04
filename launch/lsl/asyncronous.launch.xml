@@ -1,7 +1,9 @@
 <launch>
     <!-- Classification pipeline running against a live LSL EEG stream:
-         acquisition(lsl) -> filters -> buffer -> decoder -> integrator.
-         Ends by publishing /integrated/raw (two per-class values, see
+         acquisition(lsl) -> filters -> buffer -> decoder -> blink_detector (gate) -> integrator,
+         with a parallel filters_blink -> blink_detector tap watching for
+         blink artifacts (see ros2neuro_artifact_blink/README.md). Ends by
+         publishing /integrated/raw (two per-class values, see
          game_controller/README.md). Same chain as gdf/asyncronous.launch.xml,
          with the acquisition node swapped for the LSL backend (see
          ros2neuro_acquisition_lsl/config/lsl_configuration.yaml).
@@ -11,28 +13,26 @@
          evaluation_pipeline.launch.xml (same chain, for evaluation) and
          calibration_pipeline.launch.xml (no classifier needed) for the
          other two variants.
+
+         NOTE: artifact_channels below is a placeholder; check your LSL
+         stream's actual channel labels (or just use numeric indices) and
+         update it, ideally to real frontal/EOG channels if your montage has
+         them.
     -->
     <arg name="stream_name" default="LiveAmpSN-054211-0242"/>
     <arg name="stream_type" default="EEG"/>
     <arg name="decoder_model_path" default="/home/paolo/Cortical_Peaks_Challenge_2026/scripts/outputs/eegnet_mi_vernon72"/>
     <arg name="samplerate" default="500"/>
     <arg name="framerate" default="20.0"/>
+    <arg name="artifact_channels" default="[Fp1, Fp2]"/>
+    <arg name="freeze_duration_sec" default="1.0"/>
 
-    <node pkg="ros2neuro_acquisition" exec="acquisition" name="acquisition" output="screen">
-        <param name="acquisition.plugin" value="ros2neuro::acquisition::LSLDevice"/>
-        <param name="acquisition.autostart" value="true"/>
-        <param name="acquisition.reopen" value="true"/>
-        <param name="acquisition.framerate" value="$(var framerate)"/>
-        <param name="acquisition.stream_type" value="$(var stream_type)"/>
-        <param name="acquisition.stream_name" value="$(var stream_name)"/>
-        <param name="acquisition.max_buffered_samples" value="5120"/>
-        <param name="acquisition.sensors.eeg.enable" value="true"/>
-        <param name="acquisition.sensors.eeg.name" value="EEG"/>
-        <param name="acquisition.sensors.exg.enable" value="false"/>
-        <param name="acquisition.sensors.exg.name" value="EXG"/>
-        <param name="acquisition.triggers.trigger.enable" value="true"/>
-        <param name="acquisition.triggers.trigger.name" value="TRI"/>
-    </node>
+    <include file="$(find-pkg-share launchers_bci)/launch/lsl/acquisition_lsl.launch.xml">
+        <arg name="stream_name" value="$(var stream_name)"/>
+        <arg name="stream_type" value="$(var stream_type)"/>
+        <arg name="framerate" value="$(var framerate)"/>
+        <arg name="enable_trigger" value="true"/>
+    </include>
 
     <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters" output="screen">
         <param name="filters.chain" value="[hp, lp]"/>
@@ -50,6 +50,25 @@
         <remap from="~/filtered" to="/processing/filtered"/>
     </node>
 
+    <!-- Second, independent tap on the same raw acquisition, filtered to a
+         band that keeps blink content (blinks are ~1-3 Hz and are removed
+         by the hp=4Hz filter above, used for MI classification). -->
+    <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters_blink" output="screen">
+        <param name="filters.chain" value="[hp, lp]"/>
+        <param name="filters.hp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
+        <param name="filters.hp.order" value="2"/>
+        <param name="filters.hp.samplerate" value="$(var samplerate)"/>
+        <param name="filters.hp.cutoff" value="0.5"/>
+        <param name="filters.hp.type" value="highpass"/>
+        <param name="filters.lp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
+        <param name="filters.lp.order" value="2"/>
+        <param name="filters.lp.samplerate" value="$(var samplerate)"/>
+        <param name="filters.lp.cutoff" value="8.0"/>
+        <param name="filters.lp.type" value="lowpass"/>
+        <remap from="/neurodata" to="/acquisition/neurodata"/>
+        <remap from="~/filtered" to="/processing/filtered_blink"/>
+    </node>
+
     <node pkg="ros2neuro_processing_buffer" exec="buffer_node" name="buffer" output="screen">
         <param name="sensor_name" value="EEG"/>
         <param name="buffer_samples" value="500"/>
@@ -62,7 +81,20 @@
         <param name="decoder.model_path" value="$(var decoder_model_path)"/>
         <param name="decoder.name" value="eegnet_bhbf"/>
         <remap from="/features" to="/processing/buffered_features"/>
-        <remap from="~/prediction" to="/classification/prediction"/>
+        <remap from="~/prediction" to="/classification/prediction_raw"/>
+    </node>
+
+    <!-- Gates /classification/prediction_raw -> /classification/prediction:
+         while a blink is detected on filters_blink's output, predictions
+         are dropped instead of forwarded, so the integrator below receives
+         nothing and /integrated/raw freezes. -->
+    <node pkg="ros2neuro_artifact_blink" exec="blink_detector_node" name="blink_detector" output="screen">
+        <param name="sensor_name" value="EEG"/>
+        <param name="artifact_channels" value="$(var artifact_channels)"/>
+        <param name="freeze_duration_sec" value="$(var freeze_duration_sec)"/>
+        <remap from="/neurodata_filtered" to="/processing/filtered_blink"/>
+        <remap from="/prediction_in" to="/classification/prediction_raw"/>
+        <remap from="/prediction_out" to="/classification/prediction"/>
     </node>
 
     <node pkg="ros2neuro_integrator" exec="integrator_node" name="integrator" output="screen">

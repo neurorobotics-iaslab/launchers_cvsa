@@ -21,6 +21,7 @@
   <exec_depend>ros2neuro_decoder_py</exec_depend>
   <exec_depend>ros2neuro_integrator</exec_depend>
   <exec_depend>ros2neuro_integrator_buffer</exec_depend>
+  <exec_depend>ros2neuro_artifact_blink</exec_depend>
   <exec_depend>game_controller</exec_depend>
   <exec_depend>ros2neuro_feedback_wheel</exec_depend>
   <exec_depend>game_bridge</exec_depend>

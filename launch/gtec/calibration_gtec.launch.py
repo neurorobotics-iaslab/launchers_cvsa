@@ -29,7 +29,7 @@ from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
 
 TRAINING_DEFAULTS = {
-    "classes": "[773, 771]",
+    "classes": "[769, 770]",
     "trials": "[10, 10]",
     "thresholds": "[0.8, 0.2]",
     "control_topic": "/game_controller/control",
@@ -37,8 +37,8 @@ TRAINING_DEFAULTS = {
 }
 
 RECORDER_DEFAULTS = {
-    "output_directory": ".",
-    "subject": "unknown",
+    "output_directory": "./recordings",
+    "subject": "pafo27",
     "session": "",
 }
 

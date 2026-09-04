@@ -16,21 +16,12 @@
     <arg name="samplerate" default="500"/>
     <arg name="framerate" default="20.0"/>
 
-    <node pkg="ros2neuro_acquisition" exec="acquisition" name="acquisition" output="screen">
-        <param name="acquisition.plugin" value="ros2neuro::acquisition::LSLDevice"/>
-        <param name="acquisition.autostart" value="true"/>
-        <param name="acquisition.reopen" value="true"/>
-        <param name="acquisition.framerate" value="$(var framerate)"/>
-        <param name="acquisition.stream_type" value="$(var stream_type)"/>
-        <param name="acquisition.stream_name" value="$(var stream_name)"/>
-        <param name="acquisition.max_buffered_samples" value="5120"/>
-        <param name="acquisition.sensors.eeg.enable" value="true"/>
-        <param name="acquisition.sensors.eeg.name" value="EEG"/>
-        <param name="acquisition.sensors.exg.enable" value="false"/>
-        <param name="acquisition.sensors.exg.name" value="EXG"/>
-        <param name="acquisition.triggers.trigger.enable" value="false"/>
-        <param name="acquisition.triggers.trigger.name" value="TRI"/>
-    </node>
+    <include file="$(find-pkg-share launchers_bci)/launch/lsl/acquisition_lsl.launch.xml">
+        <arg name="stream_name" value="$(var stream_name)"/>
+        <arg name="stream_type" value="$(var stream_type)"/>
+        <arg name="framerate" value="$(var framerate)"/>
+        <arg name="enable_trigger" value="false"/>
+    </include>
 
     <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters" output="screen">
         <param name="filters.chain" value="[hp, lp]"/>
