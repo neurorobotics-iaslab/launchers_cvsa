@@ -48,14 +48,24 @@ from launch_ros.substitutions import FindPackageShare
 #      probability >= th_left                       -> INPUT_A, wheel all the way LEFT (class_a)
 #      probability <= th_extreme_right or >= th_extreme_left -> integrator reset
 THRESHOLD_DEFAULTS = {
-    "th_extreme_right": "0.1",  # right edge
-    "th_right": "0.25",  # center-right edge
-    "th_left": "0.7",  # center-left edge
+    "th_extreme_right": "0.3",  # right edge
+    "th_right": "0.42",  # center-right edge
+    "th_left": "0.67",  # center-left edge
     "th_extreme_left": "0.85",  # left edge
 }
 
 CONTROLLER_EXTRA_DEFAULTS = {
+    # command_period_sec only applies to with_dead_zone
+    # (TwoClassThresholdController); left/right/center_command_period_sec
+    # only apply to no_dead_zone (NoDeadZoneThresholdController's 3-state
+    # machine -- CENTER defaults far shorter since it doubles as "keep going
+    # forward"). Both sets are always forwarded; whichever controller isn't
+    # selected simply doesn't declare the other set's parameters, so they're
+    # ignored.
     "command_period_sec": "0.5",
+    "right_command_period_sec": "0.5",
+    "center_command_period_sec": "0.25",
+    "left_command_period_sec": "0.5",
     "with_reset": "true",
     # IntegratorNode creates its reset service as "reset" (a relative name,
     # not "~/reset"), so it resolves to "/reset" -- NOT "/integrator/reset"
@@ -74,10 +84,10 @@ RECORDER_DEFAULTS = {
 # Forwarded to asyncronous.launch.xml's blink_detector node -- see
 # ros2neuro_artifact_blink/src/blink_detector_node.cpp for what each one does.
 BLINK_DEFAULTS = {
-    "artifact_channels": "[Fz, Fz]",
+    "artifact_channels": "[FP1, FP2]",
     "freeze_duration_sec": "1.0",
-    "threshold_vertical": "4.0",
-    "threshold_horizontal": "4.0",
+    "threshold_vertical": "60.0",
+    "threshold_horizontal": "60.0",
 }
 
 
@@ -86,7 +96,7 @@ def generate_launch_description() -> LaunchDescription:
         DeclareLaunchArgument("target", default_value="local", description="game_bridge target: local or host"),
         DeclareLaunchArgument(
             "controller",
-            default_value="with_dead_zone",
+            default_value="no_dead_zone",
             description=(
                 "game_controller variant: with_dead_zone (controlWithDeathZone.launch.py) "
                 "or no_dead_zone (controlNoDeadZone.launch.py)"

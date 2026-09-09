@@ -66,7 +66,17 @@ THRESHOLD_DEFAULTS = {
 }
 
 CONTROLLER_EXTRA_DEFAULTS = {
+    # command_period_sec only applies to with_dead_zone
+    # (TwoClassThresholdController); left/right/center_command_period_sec
+    # only apply to no_dead_zone (NoDeadZoneThresholdController's 3-state
+    # machine -- CENTER defaults far shorter since it doubles as "keep going
+    # forward"). Both sets are always forwarded; whichever controller isn't
+    # selected simply doesn't declare the other set's parameters, so they're
+    # ignored.
     "command_period_sec": "0.5",
+    "right_command_period_sec": "0.5",
+    "center_command_period_sec": "0.1",
+    "left_command_period_sec": "0.5",
     "with_reset": "true",
     # IntegratorNode creates its reset service as "reset" (a relative name,
     # not "~/reset"), so it resolves to "/reset" -- NOT "/integrator/reset"

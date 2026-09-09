@@ -21,6 +21,7 @@
         <arg name="framerate" value="$(var framerate)"/>
     </include>
 
+    <!--
     <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters" output="screen">
         <param name="filters.chain" value="[hp, lp]"/>
         <param name="filters.hp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
@@ -43,4 +44,5 @@
         <remap from="/neurodata_filtered" to="/processing/filtered"/>
         <remap from="/features" to="/processing/buffered_features"/>
     </node>
+    -->
 </launch>

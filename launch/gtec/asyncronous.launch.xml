@@ -34,35 +34,17 @@
          artifact_channels at those two instead (by label if set in
          acquisition.sensors.eeg.labels, or by numeric index).
     -->
-    <arg name="device" default=""/>
-    <arg name="channels" default="16"/>
-    <arg name="decoder_model_path" default="/home/paolo/Cortical_Peaks_Challenge_2026/scripts/outputs/eegnet_mi_paolo"/>
-    <arg name="samplerate" default="512"/>
-    <arg name="framerate" default="16.0"/>
-    <arg name="artifact_channels" default="[Fz, Fz]"/>
-    <arg name="freeze_duration_sec" default="1.0"/>
-    <arg name="threshold_vertical" default="4.0"/>
-    <arg name="threshold_horizontal" default="4.0"/>
+    <arg name="decoder_model_path" default="/home/paolo/Cortical_Peaks_Challenge_2026/scripts/outputs/eegnet_mi_paolo10"/>
 
     <include file="$(find-pkg-share launchers_bci)/launch/gtec/acquisition_gtec.launch.xml">
-        <arg name="device" value="$(var device)"/>
-        <arg name="channels" value="$(var channels)"/>
-        <arg name="samplerate" value="$(var samplerate)"/>
-        <arg name="framerate" value="$(var framerate)"/>
     </include>
 
     <include file="$(find-pkg-share launchers_bci)/launch/gtec/filters_gtec.launch.xml">
-        <arg name="samplerate" value="$(var samplerate)"/>
-        <arg name="filters_lp_cutoff" value="14.0"/>
-        <arg name="artifact_channels" value="$(var artifact_channels)"/>
-        <arg name="freeze_duration_sec" value="$(var freeze_duration_sec)"/>
-        <arg name="threshold_vertical" value="$(var threshold_vertical)"/>
-        <arg name="threshold_horizontal" value="$(var threshold_horizontal)"/>
     </include>
 
     <node pkg="ros2neuro_processing_buffer" exec="buffer_node" name="buffer" output="screen">
         <param name="sensor_name" value="EEG"/>
-        <param name="buffer_samples" value="500"/>
+        <param name="buffer_samples" value="512"/>
         <remap from="/neurodata_filtered" to="/processing/filtered"/>
         <remap from="/features" to="/processing/buffered_features"/>
     </node>
@@ -80,7 +62,7 @@
         <param name="output_topic" value="/integrated/raw"/>
         <param name="integrator.name" value="mi_buffer_integrator"/>
         <param name="integrator.type" value="ros2neuro::integrator::Buffer"/>
-        <param name="integrator.params.buffer_size" value="256"/>
+        <param name="integrator.params.buffer_size" value="192"/>
         <param name="integrator.params.increment" value="1"/>
     </node>
 </launch>

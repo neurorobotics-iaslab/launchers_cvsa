@@ -12,24 +12,20 @@
          gating needed; see its own comment).
     -->
     <arg name="samplerate" default="512"/>
-    <arg name="filters_lp_cutoff" default="14.0"/>
-    <arg name="artifact_channels" default="[FP1, FP2]"/>
-    <arg name="freeze_duration_sec" default="1.0"/>
-    <arg name="threshold_vertical" default="4.0"/>
-    <arg name="threshold_horizontal" default="4.0"/>
 
     <node pkg="ros2neuro_filters" exec="filter_chain_node" name="filters" output="screen">
-        <param name="filters.chain" value="[hp, lp]"/>
+        <param name="filters.chain" value="[hp, lp]"/> <!-- [hp, lp, car] -->
         <param name="filters.hp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
         <param name="filters.hp.order" value="2"/>
         <param name="filters.hp.samplerate" value="$(var samplerate)"/>
-        <param name="filters.hp.cutoff" value="4.0"/>
+        <param name="filters.hp.cutoff" value="2.0"/>
         <param name="filters.hp.type" value="highpass"/>
         <param name="filters.lp.class" value="ros2neuro_filters_butterworth/ButterworthFloat"/>
         <param name="filters.lp.order" value="2"/>
         <param name="filters.lp.samplerate" value="$(var samplerate)"/>
-        <param name="filters.lp.cutoff" value="$(var filters_lp_cutoff)"/>
+        <param name="filters.lp.cutoff" value="40.0"/>
         <param name="filters.lp.type" value="lowpass"/>
+        <!-- <param name="filters.car.class" value="ros2neuro_filters_car/CarFloat"/> -->
         <remap from="/neurodata" to="/acquisition/neurodata"/>
         <remap from="~/filtered" to="/processing/filtered"/>
     </node>
@@ -60,14 +56,15 @@
          game_controller's threshold controllers in the async/control path)
          suppress outgoing behavior while the published window is open
          instead. blink_detector withholds detection until it has a matched
-         /neuroevent subscriber (see its README), so it never publishes
-         before that subscriber is up. -->
+         /neuroevent subscriber AND its startup_delay_sec has elapsed (see
+         its README), so it never publishes before the recorder is actually
+         up and recording. -->
     <node pkg="ros2neuro_artifact_blink" exec="blink_detector_node" name="blink_detector" output="screen">
         <param name="sensor_name" value="EEG"/>
-        <param name="artifact_channels" value="$(var artifact_channels)"/>
-        <param name="freeze_duration_sec" value="$(var freeze_duration_sec)"/>
-        <param name="threshold_vertical" value="$(var threshold_vertical)"/>
-        <param name="threshold_horizontal" value="$(var threshold_horizontal)"/>
+        <param name="artifact_channels" value="[FP1, FP2]"/>
+        <param name="freeze_duration_sec" value="1.0"/>
+        <param name="threshold_vertical" value="60.0"/>
+        <param name="threshold_horizontal" value="60.0"/>
         <remap from="/neurodata_filtered" to="/processing/filtered_blink"/>
     </node>
 </launch>
