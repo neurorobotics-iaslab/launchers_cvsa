@@ -1,0 +1,94 @@
+<launch>
+    <!-- Controller + game_bridge wiring for the async control path (included
+         by control_gtec_general.launch.py / control_gtec_pong.launch.py).
+         Thresholds, command mapping and periods live here as <arg> defaults:
+         edit this file and rebuild launchers_bci to retune them, no need
+         to touch any .py. Every value is still overridable per-launch on
+         the CLI, e.g. th_right:=0.35.
+
+         `controller` picks which game_controller threshold controller runs:
+         with_dead_zone (controlWithDeathZone.launch.py, dead zone between
+         commands, reset at the 0.0/1.0 extremes) or no_dead_zone
+         (controlNoDeadZone.launch.py, no dead zone, reset at the outer
+         thresholds instead). The same four thresholds feed either variant;
+         what each one bounds depends on which is selected (see
+         two_class_threshold_controller.py / no_dead_zone_threshold_controller.py):
+
+           with_dead_zone:
+             probability < th_extreme_right             -> INPUT_B, wheel RIGHT
+             th_extreme_right <= probability < th_right  -> dead zone
+             th_right <= probability < th_left           -> INPUT_C, wheel CENTER
+             th_left <= probability < th_extreme_left     -> dead zone
+             probability >= th_extreme_left              -> INPUT_A, wheel LEFT
+
+           no_dead_zone: no dead zone, a command is always sent;
+           th_extreme_right/th_extreme_left instead mark when
+           (with_reset=true) the integrator reset fires:
+             probability < th_right                       -> right_command, wheel RIGHT
+             th_right <= probability < th_left             -> center_command, wheel CENTER
+             probability >= th_left                        -> left_command, wheel LEFT
+             probability <= th_extreme_right or >= th_extreme_left -> integrator reset
+
+         `target` picks game_bridge's destination: local or host.
+    -->
+    <arg name="controller" default="no_dead_zone"/>
+    <arg name="target" default="local"/>
+
+    <!-- Must satisfy th_extreme_right < th_right <= th_left < th_extreme_left -->
+    <arg name="th_extreme_right" default="0.3"/>
+    <arg name="th_right" default="0.42"/>
+    <arg name="th_left" default="0.67"/>
+    <arg name="th_extreme_left" default="0.85"/>
+
+    <!-- with_dead_zone only -->
+    <arg name="command_period_sec" default="0.5"/>
+
+    <!-- no_dead_zone only; CENTER defaults far shorter than RIGHT/LEFT: it
+         doubles as "keep going forward" rather than a one-shot turn -->
+    <arg name="right_command_period_sec" default="0.5"/>
+    <arg name="center_command_period_sec" default="0.25"/>
+    <arg name="left_command_period_sec" default="0.5"/>
+
+    <!-- no_dead_zone only; which command (INPUT_A..INPUT_D) each zone sends -->
+    <arg name="right_command" default="INPUT_B"/>
+    <arg name="center_command" default="INPUT_C"/>
+    <arg name="left_command" default="INPUT_A"/>
+
+    <arg name="with_reset" default="true"/>
+    <!-- IntegratorNode's reset service resolves to "/reset", not "/integrator/reset" -->
+    <arg name="reset_service_name" default="/reset"/>
+    <arg name="control_topic" default="/game_controller/control"/>
+
+    <include file="$(find-pkg-share game_controller)/launch/controlWithDeathZone.launch.py"
+             if="$(equals $(var controller) with_dead_zone)">
+        <arg name="th_extreme_right" value="$(var th_extreme_right)"/>
+        <arg name="th_right" value="$(var th_right)"/>
+        <arg name="th_left" value="$(var th_left)"/>
+        <arg name="th_extreme_left" value="$(var th_extreme_left)"/>
+        <arg name="command_period_sec" value="$(var command_period_sec)"/>
+        <arg name="with_reset" value="$(var with_reset)"/>
+        <arg name="reset_service_name" value="$(var reset_service_name)"/>
+        <arg name="control_topic" value="$(var control_topic)"/>
+    </include>
+
+    <include file="$(find-pkg-share game_controller)/launch/controlNoDeadZone.launch.py"
+             unless="$(equals $(var controller) with_dead_zone)">
+        <arg name="th_extreme_right" value="$(var th_extreme_right)"/>
+        <arg name="th_right" value="$(var th_right)"/>
+        <arg name="th_left" value="$(var th_left)"/>
+        <arg name="th_extreme_left" value="$(var th_extreme_left)"/>
+        <arg name="right_command_period_sec" value="$(var right_command_period_sec)"/>
+        <arg name="center_command_period_sec" value="$(var center_command_period_sec)"/>
+        <arg name="left_command_period_sec" value="$(var left_command_period_sec)"/>
+        <arg name="right_command" value="$(var right_command)"/>
+        <arg name="center_command" value="$(var center_command)"/>
+        <arg name="left_command" value="$(var left_command)"/>
+        <arg name="with_reset" value="$(var with_reset)"/>
+        <arg name="reset_service_name" value="$(var reset_service_name)"/>
+        <arg name="control_topic" value="$(var control_topic)"/>
+    </include>
+
+    <include file="$(find-pkg-share game_bridge)/launch/bridge.launch.py">
+        <arg name="target" value="$(var target)"/>
+    </include>
+</launch>
